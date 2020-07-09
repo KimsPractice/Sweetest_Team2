@@ -11,3 +11,5 @@ sia / frontend <br>
 ## 개발 환경
 
 Express, Socket.io, Crome browser
+
+- babel: ES6 문법 사용하기위한 트랜스파일러
