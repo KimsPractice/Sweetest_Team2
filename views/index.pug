@@ -11,8 +11,25 @@ block content
       input(type="text" id="userName" placeholder="닉네임 입력하세요")
       br
       button(id="btnStart" onClick="location.href='/hali'") GAME START
+		
+
     
 
+script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js')
+script(src='https://cdn.socket.io/socket.io-1.4.5.js')
+script.
+
+    var socket = io();  
+
+    socket.on('hihi', (list) => { // 접속한 소켓 확인용
+      var socket_list = '';
+      console.log("SocketList: " + JSON.stringify(list));
+      console.log(list)
+      for(var socket in list){
+        socket_list += '<li id='+socket+'>소켓ID: '+socket+'</li>';
+      }
+      $('#param1').html(socket_list);
+  })
 
 
 

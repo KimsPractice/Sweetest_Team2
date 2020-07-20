@@ -14,6 +14,7 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -197,7 +198,6 @@ app.io.on('connection', (socket) => {
    0에 먼저 도달하면 패배
    무승부도 생각해 봐야함.
   */
-
 
   .on('disconnect', () => {
     app.io.emit('clear', socket.id);
