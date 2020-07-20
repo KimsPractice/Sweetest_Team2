@@ -45,14 +45,42 @@ a {
 }
 
 #userName{
-    display : block;
-	margin : 0 auto;
+    text-align: center;
+    margin : 0 auto;
+  
+ 
+  
 }
 
-button{  
-    display : block;
-	margin : 0 auto;
+#btnSumit{  
+   
+    text-align: center;
+    margin-left: 5px;
+    
+ 
+    
 }
 
+#btnStart{  
+  
+    margin : 0 auto;
+    display: block;
+    text-align: center;
+}
+
+
+span{
+    display : block;
+    margin : 0 auto;
+    text-align: center;
+}
+
+    
+
+form{
+    
+     margin : 0 auto;
+     text-align: center;
+}
 
 

@@ -62,6 +62,7 @@ class player {
   }
 }
 
+
 // 카드 생성
 const alpha_list = ['a', 'b', 'c', 'd']; // 종류
 const num_list = [1, 2, 3, 4, 5]; // 숫자
@@ -146,9 +147,9 @@ app.io.on('connection', (socket) => {
 
 
   // 종종 첫 번 째 접속에 소켓이 두 개 연결돼서 확인용임.
-  console.log("socket_list length: " + Object.keys(socket_list).length); 
-  console.log('socket_list : ' + JSON.stringify(socket_list));
-  console.log('new socket : ' + socket.id);
+  //console.log("socket_list length: " + Object.keys(socket_list).length); 
+  //console.log('socket_list : ' + JSON.stringify(socket_list));
+  //console.log('new socket : ' + socket.id);
 
   // 클라에서 총 접속 소켓 확인하기 용
   app.io.emit('hihi', socket_list);

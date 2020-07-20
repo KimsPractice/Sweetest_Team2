@@ -7,10 +7,18 @@ block content
     div#header
       div#text HALLY GALLY  
     div#content 
-    div#footer 
-      input(type="text" id="userName" placeholder="닉네임 입력하세요")
+    div#footer
+      form 
+        input(type="text" id="userName" placeholder="닉네임 입력하세요")
+        button(id="btnUserName" onClick="input_userName()") 확인
       br
-      button(id="btnStart" onClick="location.href='/hali'") GAME START
+      button(id="btnStart" disabled="disabled" onClick="location.href='/hali'") WAIT...
+      br
+      br
+      span(id="checkNumberUsers")
+      br
+      
+      
 		
 
     
@@ -18,18 +26,60 @@ block content
 script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js')
 script(src='https://cdn.socket.io/socket.io-1.4.5.js')
 script.
+  var btnStart = document.getElementById('btnStart');
+  var btnUserName = document.getElementById('userName').value;
+  var userName
 
-    var socket = io();  
+  function btn_on(){
+   
+    btnStart.disabled = false;
+  
+    btnStart.innerHTML = 'GAME START';
+
+  }
+
+
+  function input_userName(){
+     userName = btnUserName;
+  
+    
+  }
+
+
+  
+
+  var socket = io();
+  
 
     socket.on('hihi', (list) => { // 접속한 소켓 확인용
-      var socket_list = '';
-      console.log("SocketList: " + JSON.stringify(list));
-      console.log(list)
-      for(var socket in list){
-        socket_list += '<li id='+socket+'>소켓ID: '+socket+'</li>';
+    var socket_list = '';
+    var currentNumberUsers = Object.keys(list).length; //접속자 수 체크
+
+    console.log("list: " + list);
+    console.log("SocketList: " + JSON.stringify(list));
+    console.log("Socketlength: "+ currentNumberUsers);
+    console.log('userName:'+ userName);
+      
+    for(var socket in list){
+      console.log("socket id="+socket);
+   
       }
-      $('#param1').html(socket_list);
+
+      $('#checkNumberUsers').html("인원 수 : "+currentNumberUsers+"/2");
+
+      if(currentNumberUsers === 2){  //인원수가 2명일때 버튼활성화
+        btn_on();
+      }
+     
   })
+  socket.emit('info',(msg)=>{
+
+
+  })
+  
+      
+      
+      
 
 
 
@@ -41,14 +91,3 @@ script.
 
 
 
-<!--link(rel='stylesheet', href='/stylesheets/index.css')
-  block content
-   div container
-    h1= title
-    p Welcome to #{title}
-    br
-    br
-    span 프로토타입 패키지.
-    hr
-    br
-    a(href="/hali") 할리갈리 테스트페이지로 -->
