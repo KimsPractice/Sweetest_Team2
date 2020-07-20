@@ -1,11 +1,37 @@
-extends layout
-
+link(rel='stylesheet', href='/stylesheets/index.css')
+link(rel='stylesheet', href='/stylesheets/reset.css')
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 block content
-  h1= title
-  p Welcome to #{title}
-  br
-  br
-  span 프로토타입 패키지.
-  hr
-  br
-  a(href="/hali") 할리갈리 테스트페이지로
+
+  div#wrap
+    div#header
+      div#text HALLY GALLY  
+    div#content 
+    div#footer 
+      input(type="text" id="userName" placeholder="닉네임 입력하세요")
+      br
+      button(id="btnStart" onClick="location.href='/hali'") GAME START
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<!--link(rel='stylesheet', href='/stylesheets/index.css')
+  block content
+   div container
+    h1= title
+    p Welcome to #{title}
+    br
+    br
+    span 프로토타입 패키지.
+    hr
+    br
+    a(href="/hali") 할리갈리 테스트페이지로 -->

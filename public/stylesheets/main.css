@@ -1,0 +1,20 @@
+#wrap{
+   
+    line-height: 50%;
+    text-align: center;
+    width: 420px;
+    height: 840px;
+    margin: 0 auto;
+    background-color:rgba(39, 174, 96, 0.15);
+ 
+}
+
+#main{
+    display: inline-block;
+    margin-top: 20px;
+    width: 380px;
+    height: 720px;
+    text-align: center;
+    background-color: rgb(169, 233, 195);
+
+}
