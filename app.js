@@ -100,11 +100,19 @@ console.log('=== SHUFFLED CARD LIST: ', shuffled_card_list);
 app.io = require('socket.io')();
 app.io.on('connection', (socket) => {
 
-  socket_list[socket.id] = socket.id; 
+  socket_list[socket.id] = socket.id;
+ 
+  
+
 
 
   // Messasge Zone
   var wait_msg = "1P 입장해서 2P 기다리는 중...";
+  socket.on('info',(data)=>{
+      data.userCnt
+
+  });
+
 
 
 

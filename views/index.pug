@@ -10,7 +10,7 @@ block content
     div#footer
       form
         input(type="text" id="userName" placeholder="닉네임 입력하세요")
-        input(type="button" value="확인" onClick="btnUserName")
+        input(type="button" id="btnName" value="확인" onClick="btnUserName()")
       br
       button(id="btnStart" disabled="disabled" onClick="location.href='/hali'") WAIT...
       br
@@ -27,7 +27,9 @@ script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js')
 script(src='https://cdn.socket.io/socket.io-1.4.5.js')
 script.
   
-  var userName ={};
+ var userCnt = 0;
+
+ 
 
   function btn_on(){
    
@@ -40,39 +42,49 @@ script.
 
   function btnUserName(){
 
-    var name = document.getElementById('userName').valuse;
-
+    temp = document.getElementById('userName').value;
+    name = temp;
    
+    btnName.disabled = true;
+    userCnt++;
+    console.log( userCnt );
+   
+    
   }
 
 
   
 
-  var socket = io();
+  var socket = io(); 
+    
   
 
     socket.on('hihi', (list) => { // 접속한 소켓 확인용
     var socket_list = '';
     var currentNumberUsers = Object.keys(list).length; //접속자 수 체크
-
-    console.log("list: " + list);
+    
     console.log("SocketList: " + JSON.stringify(list));
-    console.log("Socketlength: "+ currentNumberUsers);
-    console.log('userName:'+ name  );
+    console.log('userName:'+ name); //유저 닉네임
     
       
     for(var socket in list){
       console.log("socket id="+socket);
+      
    
       }
 
       $('#checkNumberUsers').html("인원 수 : "+currentNumberUsers+"/2");
 
-      if(currentNumberUsers === 2){  //인원수가 2명일때 버튼활성화
+      if(currentNumberUsers === 2){  //인원수가 2명일때 GAME START 버튼활성화
         btn_on();
       }
+
+
      
   })
+
+    
+    
  
   
       
