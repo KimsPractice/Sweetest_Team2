@@ -1,13 +1,26 @@
 extends layout
-
 block content
 	div#wrap
 		div#main
 			div#user-closeCard
+				Img(id='userClosebasicImg')
+
 			div#user-openCard
+				Img(id='userOpenImg' src="/Image/banana/banana5_1.png")
+				Img(id="userOpenbasicImg")
+				
 			div#bell
+				button(id="btnbell")  
+
 			div#my-openCard
+				Img(id='myOpenImg' src="/Image/apple/apple3_1.png")  
+				Img(id="myOpenbasicImg")
+				
 			div#my-closeCard
+				Img(id='myClosebasicImg')
+		span(id="nickname")
+				
+			
 			
 
 
@@ -19,11 +32,23 @@ block content
 		var turn = 0;
 		var is_match;
 		var count;
+		var nickName = document.getElementById('nickname')
+	
+
+
+
+		//var image = new Image();
+		//image.src = 'file:///C:/Users/grutech/Desktop/Sweetest_Team2/Image/apple.png'
+		//console.log(image.src);
+		//userCloseCard.appendChild(image);
+
 
 		// 소켓 통신
 		socket.on('hihi', (list) => { // 접속한 소켓 확인용
 			var socket_list = '';
 			console.log("SocketList: " + JSON.stringify(list));
+			nickName.innerHTML = name;
+			console.log('userName:'+ name);
 			for(var socket in list){
 				socket_list += '<li id='+socket+'>소켓ID: '+socket+'</li>';
 			}
