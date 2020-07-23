@@ -1,11 +1,34 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
-  br
-  br
-  span 프로토타입 패키지.
-  hr
-  br
-  a(href="/hali") 할리갈리 테스트페이지로
+	h1=title
+	br
+	br
+	span 프로토타입 패키지. &nbsp;&nbsp;
+		a(href="/") 메인으로
+	hr
+	br
+	h2 * 파라미터 테스트
+	br
+	span 접속자
+	div#param1
+	br
+	hr
+	div#btn_zone1
+		button#go 게임접속
+		span 이 버튼은 방에 입장하는 테스트 버튼
+	br
+	div#btn_zone2
+		button#game_start 카드가져오기
+		span 이 버튼은 카드 가져오기 테스트 버튼. 방에 두 명 입장하고나서 누를 수 있게.
+	br
+	div#btn_zone3
+		button#big_bell 종치기
+		span 이 버튼은 종치기 테스트 버튼. 턴 당 한 번 치게 제한해야 함.
+		div#bell_result
+
+
+	script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js')
+	script(src='socket.io/socket.io.js')
+	script(src="client.js")
+
