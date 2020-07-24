@@ -2,26 +2,27 @@ extends layout
 block content
 	div#wrap
 		div#main
-			div#user-closeCard
-				Img(id='userClosebasicImg')
+			div#userCard
+				Img(id='userCardImg')
 
-			div#user-openCard
-				Img(id='userOpenImg' src="/Image/banana/banana5_1.png")
-				Img(id="userOpenbasicImg")
+			div#userOpenCard
+				Img(id='userOpenCardImg' src="/Image/banana/banana5_1.png")
+				Img(id="userCloseCardImg")
 				
 			div#bell
-				button(id="btnbell")  
+				button(id="big_bell")  
 
-			div#my-openCard
-				Img(id='myOpenImg' src="/Image/apple/apple3_1.png")  
-				Img(id="myOpenbasicImg")
+			div#myOpenCard
+				Img(id='myOpenCardImg' src="/Image/apple/apple3_1.png")  
+				Img(id="myCloseCardImg")
 				
-			div#my-closeCard
-				Img(id='myClosebasicImg')
+			div#myCard
+				Img(id='myCardImg')
+				button(id="cardOpenBtn") 카드 오픈
 		span(id="nickname")
 				
 			
-			
+
 
 
 			
@@ -32,7 +33,7 @@ block content
 		var turn = 0;
 		var is_match;
 		var count;
-		var nickName = document.getElementById('nickname')
+		var nickName = document.getElementById('nickname')		// 내이름 
 	
 
 
@@ -75,11 +76,12 @@ block content
 
 		$('#go').click(() => { // 방 입장용(게임시작용)
 			console.log('click go');
-			socket.emit('go');
+		
 		});
 
-		$('#game_start').click(() => { 
-			// 카드 요청. 
+		$('#cardOpenBtn').click(() => { 
+			// 카드 요청.
+			socket.emit('go'); 
 			socket.emit('show_me_the_card');
 		});
 
