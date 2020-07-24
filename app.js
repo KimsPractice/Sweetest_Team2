@@ -47,20 +47,26 @@ var socket_list = {};
 var room_for_1p = '';
 var idx = 0;
 
+
 // 플레이어 생성자. [ roll: 1p인지 2p인지 / id: socket.id / life: 남은 카드 갯수 ]
 class player {
-	constructor(roll, id, life) {
+	constructor(roll, name, socketId, life) {
 		this.roll = roll;
-		this.id = id;
+		this.name = name;
+		this.socketId = socketId;
 		this.life = 28; // 1:1만 할거라 일단 28로 고정. 여러명은 나중에 생각
 		this.info = () => {
-			console.log("=======" + this.roll + " 플레이어 정보 =======");
-			console.log(" socket.id: " + id);
-			console.log(" 소지 카드: " + life);
-			console.log("================================");
+			console.log("	======== "+roll+"player info =======");
+			console.log("	name: " + name);
+			console.log("	socket.id: " + socketId);
+			console.log("	소지 카드: " + life);
+
 		};
 	}
 }
+
+var player_one;
+var player_two;
 
 // 카드 생성
 const alpha_list = ['a', 'b', 'c', 'd']; // 종류
@@ -93,37 +99,14 @@ Array.prototype.shuffle = function () {
 const shuffled_card_list = card_list.shuffle();
 console.log('=== SHUFFLED CARD LIST: ', shuffled_card_list);
 
-// 카드 이름 만들어주기
-function makeCardName(card) {
-	let card_name = "";
-	let name = card.substring(0, 1);
-	let num = card.substring(1, 2);
-	switch (name){
-		case "a" :
-			card_name = "apple";
-			break;
-		case "b" :
-			card_name = "banana";
-			break;
-		case "c" :
-			card_name = "peach";
-			break;
-		case "d" :
-			card_name = "strawberry";
-			break;
-	}
-	return card_name + num;
-}
-
 
 // 소켓 통신 =====================================================================
 
 app.io = require('socket.io')();
 app.io.on('connection', (socket) => {
 
-	socket_list[socket.id] = socket.id;
-
-	app.io.emit('hihi', socket_list);
+	// socket_list[socket.id] = socket.id;
+	// app.io.emit('hihi', socket_list);
 
 	// Messasge Zone
 	var wait_msg = "1P 입장해서 2P 기다리는 중...";
@@ -134,28 +117,31 @@ app.io.on('connection', (socket) => {
 	  방 배열을 미리 만들어 놓고 들락날락할 때 자리 인덱스를 갱신하여 순차 배치하는 방법이 괜찮을 것 같음.
 	*/
 	socket.on('go', () => {
+		socket_list[socket.id] = socket.id;
+		app.io.emit('hihi', socket_list);
+
 		if (room_for_1p == '') {
 			room_for_1p = 'room_' + socket.id;
 
 			socket.join(room_for_1p, () => {
-				var player_one = new player('1p', socket.id, 28);
+				player_one = new player('1p', null, socket.id, 28);
 				var info_msg = socket.id + " 소켓이 방을 생성함. 방이름: " + room_for_1p;
 				app.io.to(room_for_1p).emit('info', info_msg);
 				app.io.to(room_for_1p).emit('info', wait_msg);
 				// 클라에 사용자 정보 어떤거 보낼지 생각해야
 				player_one.info();
 
-				console.log(socket.id + " 소켓이 방을 생성함. 방이름: " + room_for_1p);
+				console.log(info_msg);
 				console.log(wait_msg);
 			});
 		} else {
 			socket.join(room_for_1p, () => { // 입장을 두 명으로 제한해야 함.
 				var info_msg = socket.id + " 소켓이 방에 입장함. 방이름: " + room_for_1p;
 				app.io.to(room_for_1p).emit('info', info_msg);
-				var player_two = new player('2p', socket.id, 28);
-				player_two.info();
+				player_two = new player('2p', null, socket.id, 28);
+				//player_two.info();
 
-				console.log(socket.id + " 소켓이 방에 입장함 방이름: " + room_for_1p);
+				console.log(info_msg);
 			});
 
 			var rooms = socket.adapter.rooms;
@@ -169,12 +155,12 @@ app.io.on('connection', (socket) => {
 
 		var match = false;
 
-		if (idx == 0) {// 첫 카드
+		if (idx == 0) {// 첫 카드. 
+			//처음 종을 쳤을 경우, 상대방의 안깐 카드를 주는지(카드 뒤집는 횟수를 늘리는지) 바닥에 쌓는 카드를 늘리는지
 
 			var card_one = shuffled_card_list[0];
 
 			match = Number(card_one.substring(1, 2)) == 5 ? true : false;
-
 			app.io.to(room_for_1p).emit('gift_card', card_one, idx, match);
 			idx++;
 
@@ -188,7 +174,6 @@ app.io.on('connection', (socket) => {
 
 			var same_kind = card_one.substring(0, 1) == card_before.substring(0, 1) ? true : false;
 			
-			
 			if(same_kind){
 				var make_five = card_before_num + card_one_num == 5 ? true : false;
 			}
@@ -197,7 +182,7 @@ app.io.on('connection', (socket) => {
 			app.io.to(room_for_1p).emit('gift_card', card_one, idx, match);
 			idx++;
 			
-			console.log(card_before, card_one, ">>>same_kind: ", same_kind, " / match: ", match);
+			console.log(card_before, card_one, "  >>>  same_kind: ", same_kind, " / match: ", match);
 		} else {
 			console.log("카드 다 줬음. 엔딩은 1P 2P 카운트 비교해서");
 		}
@@ -212,6 +197,38 @@ app.io.on('connection', (socket) => {
 
 	.on('client_message', (msg) => {
 		console.log("클라에게서 온 메시지: ", msg);
+
+		var msg_mode = msg.mode;
+
+		switch (msg_mode){
+			case "user_init" :
+				console.log("===========",socket.id);
+				socket_list[socket.id] = msg.userName;
+				console.log("socket list",socket_list);
+				if (player_one.socketId === socket.id){
+					console.log("dddd");
+					player_one.name = msg.userName;
+				} else { // 여기 고장남
+					player_two.name = msg.userName;
+				}
+				console.log(player_one);
+				console.log(player_two);
+				
+				break;
+
+			case "info" :
+
+				break;
+
+			case "msg" :
+
+				break;
+
+			case "abc" :
+
+				break;
+
+		}
 
 	})
 
