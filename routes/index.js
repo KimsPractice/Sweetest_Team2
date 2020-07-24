@@ -12,8 +12,8 @@ router.get('/', function(req, res, next) {
 
 });
 
-router.get('/hali', function(req, res, next) {
-  res.render('hali', { title: '할리갈리 테스트 페이지' });
+router.get('/halli', function(req, res, next) {
+  res.render('halli', { title: '할리갈리 테스트 페이지' });
 });
 
 
