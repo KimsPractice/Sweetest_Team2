@@ -12,7 +12,8 @@ block content
 				input(type="text" id="userName" placeholder="닉네임 입력하세요")
 				input(type="button" id="btnName" value="확인" onClick="btnUserName()")
 				br
-				button(id="btnStart" disabled="disabled" onClick="location.href='/halli'") WAIT...
+				//- button(id="btnStart" disabled="disabled" onClick="location.href='/halli'") WAIT...
+				button(type="submit" id="btnStart") GOGO
 			br
 
 			br
@@ -26,7 +27,7 @@ block content
 
 
 script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js')
-script(src='https://cdn.socket.io/socket.io-1.4.5.js')
+//- script(src='https://cdn.socket.io/socket.io-1.4.5.js')
 script.
 
 
@@ -44,8 +45,8 @@ script.
 			name = temp;
 
 			btnName.disabled = true;
-			userCnt++;
-			console.log( userCnt );   
+			//userCnt++;
+			//console.log( userCnt );   
 		}
 
 		var socket = io(); 

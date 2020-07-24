@@ -6,14 +6,14 @@ block content
 				Img(id='userCardImg')
 
 			div#userOpenCard
-				Img(id='userOpenCardImg' src="/Image/banana/banana5_1.png")
+				Img(id='userOpenCardImg' src="")
 				Img(id="userCloseCardImg")
 				
 			div#bell
 				button(id="big_bell")  
 
 			div#myOpenCard
-				Img(id='myOpenCardImg' src="/Image/apple/apple3_1.png")  
+				Img(id='myOpenCardImg' src="")
 				Img(id="myCloseCardImg")
 				
 			div#myCard
@@ -22,7 +22,8 @@ block content
 		span(id="nickname")
 				
 			
-
+		div#tmpDiv(style="position:absolute;top:500px;")
+			button(id="tmp") (임시)입장
 
 
 			
@@ -34,9 +35,27 @@ block content
 		var is_match;
 		var count;
 		var nickName = document.getElementById('nickname')		// 내이름 
-	
-
-
+		
+		// 카드 이름 매칭
+		function makeName(card) {
+			let card_name = "";
+			let name = card.substring(0, 1);
+			switch (name){
+				case "a" :
+					card_name = "apple";
+					break;
+				case "b" :
+					card_name = "banana";
+					break;
+				case "c" :
+					card_name = "peach";
+					break;
+				case "d" :
+					card_name = "strawberry";
+					break;
+			}
+			return card_name;
+		}
 
 		//var image = new Image();
 		//image.src = 'file:///C:/Users/grutech/Desktop/Sweetest_Team2/Image/apple.png'
@@ -55,33 +74,54 @@ block content
 			}
 			$('#param1').html(socket_list);
 		})
-		.on('clear', (id) => { // 나가면 소켓 확인용 리스트에서 지움
+
+		// 나가면 소켓 확인용 리스트에서 지움
+		.on('clear', (id) => {
 			$('#param1 li#'+id).remove();
 		})
-		.on('info', (msg) => { // 서버에서 보내는 정보 메시지 받음
+
+		// 서버에서 보내는 정보 메시지 받음
+		.on('info', (msg) => {
 			console.log(msg);
 		})
-		.on('gift_card', (card_one, idx, match) => { // 카드 배분. 받은걸로 액션 처리.
+
+		// 카드 배분. 받은걸로 액션 처리.
+		.on('gift_card', (card, idx, match) => {
 			is_match = match; // 다음 단계를 위해서 저장
 			count = idx; // 다음 단계를 위해서 저장
+
+			var folder_name = makeName(card);
+			var card_name = folder_name + card.substring(1, 2);
 			
-			console.log('서버로부터 카드 받음(idx:'+idx+')', card_one);
+			// 카운트를 유저 턴으로 바꿔줘야함. 예시로 순차처리. 턴값은 서버에서 종친거 처리하고 넘겨드림
+			(count % 2 == 1) ? 
+				$("#myOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
+				: $("#userOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png";
+			
+			console.log('서버로부터 카드 받음(idx:'+idx+')', card_name, ' / match: ', match);
 			console.log('카드 5 ? : ' + match);
-			
+
 			if (idx == 55){
 				console.log("카드 다 썼음. 엔딩처리하면 됨");
 			}
 		});
 
 
-		$('#go').click(() => { // 방 입장용(게임시작용)
+		$('#tmp').click(() => { // 방 입장용(게임시작용)
 			console.log('click go');
+			var client_message = {
+				mode : "user_init",
+				userName : name,
+			}
+
+			socket.emit('go'); 
+			socket.emit('client_message', client_message);
 		
 		});
 
 		$('#cardOpenBtn').click(() => { 
 			// 카드 요청.
-			socket.emit('go'); 
+			
 			socket.emit('show_me_the_card');
 		});
 
@@ -99,8 +139,6 @@ block content
 				socket.emit('client_message', msg);
 			}
 		});
-
-
 
 
 		//	h1= title
