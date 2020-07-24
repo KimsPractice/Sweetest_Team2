@@ -62,7 +62,6 @@ class player {
 	}
 }
 
-
 // 카드 생성
 const alpha_list = ['a', 'b', 'c', 'd']; // 종류
 const num_list = [1, 2, 3, 4, 5]; // 숫자
@@ -94,27 +93,40 @@ Array.prototype.shuffle = function () {
 const shuffled_card_list = card_list.shuffle();
 console.log('=== SHUFFLED CARD LIST: ', shuffled_card_list);
 
+// 카드 이름 만들어주기
+function makeCardName(card) {
+	let card_name = "";
+	let name = card.substring(0, 1);
+	let num = card.substring(1, 2);
+	switch (name){
+		case "a" :
+			card_name = "apple";
+			break;
+		case "b" :
+			card_name = "banana";
+			break;
+		case "c" :
+			card_name = "peach";
+			break;
+		case "d" :
+			card_name = "strawberry";
+			break;
+	}
+	return card_name + num;
+}
+
 
 // 소켓 통신 =====================================================================
 
 app.io = require('socket.io')();
 app.io.on('connection', (socket) => {
 
-
 	socket_list[socket.id] = socket.id;
 
-
-
-
-
-
-
+	app.io.emit('hihi', socket_list);
 
 	// Messasge Zone
 	var wait_msg = "1P 입장해서 2P 기다리는 중...";
-
-
-
 
 	/* room 배치
 	  아래는 처음 입장자 소켓명으로 방을 생성해서 이후 접속자를 1P방에 입장시키는 방식임. 오직 두 사람 용.
@@ -152,67 +164,69 @@ app.io.on('connection', (socket) => {
 			console.log("방정보: " + JSON.stringify(rooms));
 		}
 	})
+	
+	.on('show_me_the_card', () => { // 카드 요청 > 전달 이벤트
 
-
-	// 종종 첫 번 째 접속에 소켓이 두 개 연결돼서 확인용임.
-	//console.log("socket_list length: " + Object.keys(socket_list).length); 
-	//console.log('socket_list : ' + JSON.stringify(socket_list));
-	//console.log('new socket : ' + socket.id);
-
-	// 클라에서 총 접속 소켓 확인하기 용
-	app.io.emit('hihi', socket_list);
-
-
-
-	// 카드 요청 > 전달 이벤트
-	socket.on('show_me_the_card', () => {
 		var match = false;
 
 		if (idx == 0) {// 첫 카드
+
 			var card_one = shuffled_card_list[0];
-			// 만약 최초가 5인데 상대가 종을 친 경우는?? 첫카드는 종 못치게 해야할거같은디...
+
+			match = Number(card_one.substring(1, 2)) == 5 ? true : false;
+
 			app.io.to(room_for_1p).emit('gift_card', card_one, idx, match);
 			idx++;
+
 		} else if (idx != 0 && idx < shuffled_card_list.length) {
+
 			// 바로 전 카드와 비교
 			var card_before = shuffled_card_list[idx - 1];
 			var card_one = shuffled_card_list[idx];
+			var card_before_num = Number(card_before.substring(1, 2));
+			var card_one_num = Number(card_one.substring(1, 2));
 
-			var is_five = Number(card_one.substring(1, 2)) + Number(card_before.substring(1, 2));
-
-			if (Number(card_one.substring(1, 2)) == 5 || is_five == 5) match = true;
-
+			var same_kind = card_one.substring(0, 1) == card_before.substring(0, 1) ? true : false;
+			
+			
+			if(same_kind){
+				var make_five = card_before_num + card_one_num == 5 ? true : false;
+			}
+			
+			match = (make_five || card_one_num == 5) ? true : false;
 			app.io.to(room_for_1p).emit('gift_card', card_one, idx, match);
 			idx++;
+			
+			console.log(card_before, card_one, ">>>same_kind: ", same_kind, " / match: ", match);
 		} else {
 			console.log("카드 다 줬음. 엔딩은 1P 2P 카운트 비교해서");
 		}
 	})
 
-		.on('count', (count) => {
+	.on('count', (count) => {
 
-			if (player_one == 0 || player_two == 0 || count == 0) {
-				console.log("게임 끝. (player_one)" + player_one + " 대 (player_two)" + player_two);
-			}
-		})
+		if (player_one == 0 || player_two == 0 || count == 0) {
+			console.log("게임 끝. (player_one)" + player_one + " 대 (player_two)" + player_two);
+		}
+	})
 
-		.on('client_message', (msg) => {
-			console.log("클라에게서 온 메시지: ", msg);
+	.on('client_message', (msg) => {
+		console.log("클라에게서 온 메시지: ", msg);
 
-		})
+	})
 
-		// .on() 엔딩. 
-		/* 승패 판별 방법.
-		 1p 2p 각각 28 부여해서 차감하는 방식으로, (제출시 -1, 종 잘못치면 -1)
-		 0에 먼저 도달하면 패배
-		 무승부도 생각해 봐야함.
-		*/
+	// .on() 엔딩. 
+	/* 승패 판별 방법.
+		1p 2p 각각 28 부여해서 차감하는 방식으로, (제출시 -1, 종 잘못치면 -1)
+		0에 먼저 도달하면 패배
+		무승부도 생각해 봐야함.
+	*/
 
-		.on('disconnect', () => {
-			app.io.emit('clear', socket.id);
-			console.log('연결해제: ' + socket.id);
-			delete socket_list[socket.id];
-		})
+	.on('disconnect', () => {
+		app.io.emit('clear', socket.id);
+		console.log('연결해제: ' + socket.id);
+		delete socket_list[socket.id];
+	})
 
 
 
