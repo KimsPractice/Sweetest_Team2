@@ -33,7 +33,7 @@ block content
 	script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js')
 	script.
 		var socket = io();
-		var turn = 0;
+		var turn = true;
 		var is_match;
 		var count;
 		var nickName = document.getElementById('nickname')		// 내이름 
@@ -78,13 +78,13 @@ block content
 		})
 
 
-		// 서버로부터 전달받은 메시지를 종류별로 처리
-		.on('info', (msg) => {
+		// 서버로부터 전달받은 정보 메세지를 종류별로 처리
+		.on('server_message', (msg) => {
 			
 			var msg_mode = msg.mode;
 
 			switch (msg_mode){
-				case "user_init" :
+				case "start" :
 
 					console.log("유저정보: ", msg)
 
@@ -98,10 +98,19 @@ block content
 
 				case "bell" :
 
-					console.log("차감 결과: ", msg.playerOne.life + " : " +  msg.playerTwo.life);
+					console.log("bell: ", msg);
+
+					$("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
+					$("#userOpenCardImg")[0].src = "";
 
 					break;
 					
+				case "card_open_after" :
+
+					console.log("card_open_after: ", msg);
+
+					break;
+
 				default :
 					console.log(msg);
 			}
@@ -110,39 +119,37 @@ block content
 
 
 		// 카드 배분. 받은걸로 액션 처리.
-		.on('gift_card', (card, idx, match) => {
-
-			is_match = match; // 다음 단계를 위해서 저장
-			count = idx; // 다음 단계를 위해서 저장
+		.on('gift_card', (card, idx, match, ask) => {
 
 			var folder_name = makeName(card);
 			var card_name = folder_name + card.substring(1, 2);
-			
-			// 카운트를 유저 턴으로 바꿔줘야함. 예시로 순차처리. 턴값은 서버에서 종친거 처리하고 넘겨드림
-			(count % 2 == 1) ? 
+
+			console.log('(idx:'+idx+')', card_name, ' / match: ', match);
+
+			// 카드를 요청한 소켓이 본인이면 본인자리에, 상대방이면 상대방 자리에 카드 배치
+			(ask == socket.id) ? 
 				$("#myOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
 				: $("#userOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png";
-			
-			console.log('(idx:'+idx+')', card_name, ' / match: ', match);
 
 			if (idx == 55){
 				console.log("카드 다 썼음. 엔딩처리하면 됨");
 			}
 
-		});
+		})
 
 
 		// 카드 요청
 		$('#cardOpenBtn').click(() => { 
-			
-			socket.emit('show_me_the_card');
+			if(turn) {
+				socket.emit('show_me_the_card');
+			} else {
+				console.log("상대방의 턴");
+			}
 		});
 
 
 		// 벨
 		$('#big_bell').click(() => {
-			$("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
-			$("#userOpenCardImg")[0].src = "";
 
 			var msg = {
 				mode : "bell",
@@ -172,7 +179,17 @@ block content
 
 		/////////////// 테스트용
 
+		
+		socket.on('clean', () => {
+			$("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
+			$("#userOpenCardImg")[0].src = "";
+		});
+
+
 		$('#tmp1').click(() => { // 방 입장용(게임시작용)
+
+			nickName.innerHTML = name;
+
 			console.log('click go');
 			var msg = {
 				mode : "user_init",
@@ -192,4 +209,5 @@ block content
 			
 			socket.emit('reset');
 		});
+
 
