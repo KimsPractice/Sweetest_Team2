@@ -77,18 +77,41 @@ block content
 			$('#param1').html(socket_list);
 		})
 
-		// 나가면 소켓 확인용 리스트에서 지움
-		.on('clear', (id) => {
-			$('#param1 li#'+id).remove();
+
+		// 서버로부터 전달받은 메시지를 종류별로 처리
+		.on('info', (msg) => {
+			
+			var msg_mode = msg.mode;
+
+			switch (msg_mode){
+				case "user_init" :
+
+					console.log("유저정보: ", msg)
+
+					break;
+
+				case "info" :
+
+					console.log(msg);
+
+					break;
+
+				case "bell" :
+
+					console.log("차감 결과: ", msg.playerOne.life + " : " +  msg.playerTwo.life);
+
+					break;
+					
+				default :
+					console.log(msg);
+			}
+
 		})
 
-		// 서버에서 보내는 정보 메시지 받음
-		.on('info', (msg) => {
-			console.log(msg);
-		})
 
 		// 카드 배분. 받은걸로 액션 처리.
 		.on('gift_card', (card, idx, match) => {
+
 			is_match = match; // 다음 단계를 위해서 저장
 			count = idx; // 다음 단계를 위해서 저장
 
@@ -100,36 +123,47 @@ block content
 				$("#myOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
 				: $("#userOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png";
 			
-			console.log('서버로부터 카드 받음(idx:'+idx+')', card_name, ' / match: ', match);
-			console.log('카드 5 ? : ' + match);
+			console.log('(idx:'+idx+')', card_name, ' / match: ', match);
 
 			if (idx == 55){
 				console.log("카드 다 썼음. 엔딩처리하면 됨");
 			}
+
 		});
 
+
+		// 카드 요청
 		$('#cardOpenBtn').click(() => { 
-			// 카드 요청.
 			
 			socket.emit('show_me_the_card');
 		});
 
+
+		// 벨
 		$('#big_bell').click(() => {
 			$("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
 			$("#userOpenCardImg")[0].src = "";
 
+			var msg = {
+				mode : "bell",
+				match : null 
+			}
+
 			if(is_match) {
-				console.log("종 잘 쳤음"); 
 				// 쓴 카드 회수하는 것은 승패에 영향이 없지만 추가해야할까... 
 				// 한 번이라도 종을 친 적이 있다면 0 됐을 때 카드 뒷면 이미지 보여지게 처리하면 됨. 없으면 맨마닥.
 				
-				let msg = socket.id + "가 종을 잘 쳤음. 짝짝짝. 뷰에서 액션 처리할 수 있게 회신 바람";
+				msg.match = true;
+
 				socket.emit('client_message', msg);
+
 			} else { 
-				console.log(socket.id + " 잘못쳤음. -1해야함 ");
-				let msg = socket.id + "가 종을 잘못쳤으니까 차감 후 회신 바람";
+
+				msg.match = false;
+
 				socket.emit('client_message', msg);
 			}
+
 		});
 
 
@@ -140,13 +174,13 @@ block content
 
 		$('#tmp1').click(() => { // 방 입장용(게임시작용)
 			console.log('click go');
-			var client_message = {
+			var msg = {
 				mode : "user_init",
-				userName : name,
+				userName : name
 			}
 
 			socket.emit('go'); 
-			socket.emit('client_message', client_message);
+			socket.emit('client_message', msg);
 		
 		});
 
