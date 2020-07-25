@@ -145,7 +145,7 @@ app.io.on('connection', (socket) => {
 				info_msg.msg = socket.id + " 소켓이 방을 생성함. 방이름: " + room_for_1p;
 
 				app.io.to(room_for_1p).emit('info', info_msg);
-				app.io.to(room_for_1p).emit('info', room_info);
+				app.io.emit('info', room_info);
 
 				player_one.info();
 
@@ -163,7 +163,7 @@ app.io.on('connection', (socket) => {
 				info_msg.msg = socket.id + " 소켓이 방에 입장함. 방이름: " + room_for_1p;
 
 				app.io.to(room_for_1p).emit('info', info_msg);
-				app.io.to(room_for_1p).emit('info', room_info);
+				app.io.emit('info', room_info);
 				
 				player_two.info();
 
