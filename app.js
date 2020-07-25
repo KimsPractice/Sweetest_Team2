@@ -125,12 +125,7 @@ app.io.on('connection', (socket) => {
 	socket_list[socket.id] = socket.id;
 	// app.io.emit('hihi', socket_list);
 
-
-	/* room 배치
-	  아래는 처음 입장자 소켓명으로 방을 생성해서 이후 접속자를 1P방에 입장시키는 방식임. 오직 두 사람 용.
-	  방이 여러개일 때, 중간에 빵꾸나면 그 다음 입장자는 빈 곳을 어떻게 찾아 들어가는지 등등 예외에 대한 생각이 좀 필요함.
-	  방 배열을 미리 만들어 놓고 들락날락할 때 자리 인덱스를 갱신하여 순차 배치하는 방법이 괜찮을 것 같음.
-	*/
+	// 방에 안입장한 사람들은 관전할 수 있게 하면 되겠음
 	socket.on('go', () => {
 
 		// app.io.emit('hihi', socket_list);
@@ -161,23 +156,28 @@ app.io.on('connection', (socket) => {
 			});
 
 		} else if (two_room != socket.id) {
-			socket.join(two_room, () => { // 입장을 두 명으로 제한해야 함.
 
-				player_two.socketId = socket.id;
-				room_info.socketList[1] = socket.id;
+			// 입장을 두 명으로 제한
+			if(room_info.socketList.length < 2){
 
-				info_msg.mode = "start";
-				info_msg.msg = player_two;
+				socket.join(two_room, () => { 
 
-				app.io.to(two_room).emit('server_message', info_msg);  // <<<<<<<<<<<<<<<< emit
-				app.io.emit('server_message', room_info); 			 	// <<<<<<<<<<<<<<<< emit
-				
-				player_two.info();
+					player_two.socketId = socket.id;
+					room_info.socketList[1] = socket.id;
 
-				console.log(info_msg);
-				console.log("room_info: ",room_info);
+					info_msg.mode = "start";
+					info_msg.msg = player_two;
 
-			});
+					app.io.to(two_room).emit('server_message', info_msg);  // <<<<<<<<<<<<<<<< emit
+					app.io.emit('server_message', room_info); 			 	// <<<<<<<<<<<<<<<< emit
+					
+					player_two.info();
+
+					console.log(info_msg);
+					console.log("room_info: ",room_info);
+
+				});
+			}
 
 			// var rooms = socket.adapter.rooms;
 			// app.io.to(two_room).emit('방정보', JSON.stringify(rooms));
