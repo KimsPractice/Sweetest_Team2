@@ -60,7 +60,6 @@ class player {
 			console.log("	name: " + name);
 			console.log("	socket.id: " + socketId);
 			console.log("	소지 카드: " + life);
-
 		};
 	}
 }
@@ -96,7 +95,7 @@ Array.prototype.shuffle = function () {
 	return this;
 };
 
-const shuffled_card_list = card_list.shuffle();
+var shuffled_card_list = card_list.shuffle();
 console.log('=== SHUFFLED CARD LIST: ', shuffled_card_list);
 
 
@@ -238,6 +237,14 @@ app.io.on('connection', (socket) => {
 		0에 먼저 도달하면 패배
 		무승부도 생각해 봐야함.
 	*/
+
+	.on('reset', () => {
+		shuffled_card_list = shuffled_card_list = card_list.shuffle();
+		idx = 0;
+		console.log("=== 카드 셔플 ===");
+		console.log("=== SUFFLED CARD LIST", shuffled_card_list);
+	})
+
 
 	.on('disconnect', () => {
 		app.io.emit('clear', socket.id);

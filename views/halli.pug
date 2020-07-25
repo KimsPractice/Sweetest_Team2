@@ -23,7 +23,9 @@ block content
 				
 			
 		div#tmpDiv(style="position:absolute;top:500px;")
-			button(id="tmp") (임시)입장
+			button(id="tmp1") (임시) 입장
+			br
+			button(id="tmp2") 카드 초기화
 
 
 			
@@ -106,19 +108,6 @@ block content
 			}
 		});
 
-
-		$('#tmp').click(() => { // 방 입장용(게임시작용)
-			console.log('click go');
-			var client_message = {
-				mode : "user_init",
-				userName : name,
-			}
-
-			socket.emit('go'); 
-			socket.emit('client_message', client_message);
-		
-		});
-
 		$('#cardOpenBtn').click(() => { 
 			// 카드 요청.
 			
@@ -126,6 +115,9 @@ block content
 		});
 
 		$('#big_bell').click(() => {
+			$("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
+			$("#userOpenCardImg")[0].src = "";
+
 			if(is_match) {
 				console.log("종 잘 쳤음"); 
 				// 쓴 카드 회수하는 것은 승패에 영향이 없지만 추가해야할까... 
@@ -141,31 +133,29 @@ block content
 		});
 
 
-		//	h1= title
-		//	br
-		//	br
-		//	span 프로토타입 패키지. &nbsp;&nbsp;
-		//		a(href="/") 메인으로
-		//	hr
-		//	br
-		//	h2 * 파라미터 테스트
-		//	br
-		//	span 접속자
-		//	div#param1
-		//	br
-		//	hr
-		//	div#btn_zone1
-		//		button#go 게임접속
-		//		span 이 버튼은 방에 입장하는 테스트 버튼
-		//	br
-		//	div#btn_zone2
-		//		button#game_start 카드가져오기
-		//			span 이 버튼은 카드 가져오기 테스트 버튼. 방에 두 명 입장하고나서 누를 수 있게.
-		//	br
-		//	div#btn_zone3
-		//		button#big_bell 종치기
-		//		span 이 버튼은 종치기 테스트 버튼. 턴 당 한 번 치게 제한해야 함.
-		//		div#bell_result	
 
 
+
+		/////////////// 테스트용
+
+		$('#tmp1').click(() => { // 방 입장용(게임시작용)
+			console.log('click go');
+			var client_message = {
+				mode : "user_init",
+				userName : name,
+			}
+
+			socket.emit('go'); 
+			socket.emit('client_message', client_message);
+		
+		});
+
+		$('#tmp2').click(() => { 
+			console.log("게임을 초기화합니다.");
+
+			$("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
+			$("#userOpenCardImg")[0].src = "";
+			
+			socket.emit('reset');
+		});
 
