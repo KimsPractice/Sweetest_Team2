@@ -130,18 +130,11 @@ block content
 					// 턴 처리
 					if(msg.msg[0].turn){
 						console.log("1P의 턴");
-						if(msg.msg[1].socketId == socket.id){
-							$("#cardOpenBtn")[0].disabled = true;
-						} else {
-							$("#cardOpenBtn")[0].disabled = false;
-						}
+						(msg.msg[1].socketId == socket.id) ? $("#cardOpenBtn")[0].disabled = true : $("#cardOpenBtn")[0].disabled = false;
+					
 					} else {
 						console.log("2P의 턴");
-						if(msg.msg[0].socketId == socket.id){
-							$("#cardOpenBtn")[0].disabled = true;
-						} else {
-							$("#cardOpenBtn")[0].disabled = false;
-						}
+						(msg.msg[0].socketId == socket.id) ? $("#cardOpenBtn")[0].disabled = true : $("#cardOpenBtn")[0].disabled = false;
 					}
 
 					break;
@@ -159,6 +152,8 @@ block content
 			var folder_name = makeName(card);
 			var card_name = folder_name + card.substring(1, 2);
 
+			is_match = match; // $('#big_bell').click 에서 사용
+
 			console.log('(idx:'+idx+')', card_name, ' / match: ', match);
 
 			// 카드를 요청한 소켓이 본인이면 본인자리에, 상대방이면 상대방 자리에 카드 배치
@@ -171,6 +166,20 @@ block content
 			}
 
 		})
+
+
+		// 게임오버
+		.on('win', msg => {
+			console.log("승리");
+
+		})
+
+		.on('lose', msg => {
+			console.log("패배");
+
+		})
+
+
 
 
 		// 카드 요청
@@ -218,6 +227,7 @@ block content
 		socket.on('clean', () => {
 			$("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
 			$("#userOpenCardImg")[0].src = "";
+			$("#tmp1")[0].disabled = false;	
 		});
 
 
@@ -241,9 +251,9 @@ block content
 		$('#tmp2').click(() => { 
 			console.log("게임을 초기화합니다.");
 
-			$("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
-			$("#userOpenCardImg")[0].src = "";
-			$("#tmp1")[0].disabled = false;	
+			// $("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
+			// $("#userOpenCardImg")[0].src = "";
+			
 
 			socket.emit('reset');
 		});

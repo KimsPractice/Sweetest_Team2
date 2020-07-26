@@ -17,6 +17,9 @@
   },
   "homepage": "https://github.com/KimsPractice/Sweetest_Team2#readme",
   "dependencies": {
+    "@babel/core": "^7.10.5",
+    "@babel/node": "^7.10.5",
+    "@babel/preset-env": "^7.10.4",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "^4.17.1",
@@ -26,8 +29,6 @@
     "socket.io": "^2.3.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.10.5",
-    "@babel/node": "^7.10.5",
     "nodemon": "^2.0.4"
   }
 }
