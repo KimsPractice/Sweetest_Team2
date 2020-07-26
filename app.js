@@ -204,6 +204,10 @@ app.io.on('connection', (socket) => {
 
 				player_one.life--;
 
+				info_msg.mode = 'info';
+				info_msg.msg = "player1 남은 카드: " + player_one.life;
+				app.io.emit('server_message', info_msg);    // <<<<<<<<<<<<<<<< emit
+
 			} else if (player_two.socketId == socket.id) {
 				player_two.turn = false;
 				player_one.turn = true;
@@ -211,6 +215,10 @@ app.io.on('connection', (socket) => {
 				ask = player_two.socketId;
 
 				player_two.life--;
+
+				info_msg.mode = 'info';
+				info_msg.msg = "player2 남은 카드: " + player_two.life;
+				app.io.emit('server_message', info_msg);    // <<<<<<<<<<<<<<<< emit
 			}
 			
 			if (idx == 0) {// 첫 카드. 
@@ -250,6 +258,8 @@ app.io.on('connection', (socket) => {
 
 			} else {
 				console.log("카드 다 줬음. 엔딩은 1P 2P 카운트 비교해서");
+				
+
 			}
 
 			info_msg.mode = "card_open_after";
@@ -307,11 +317,21 @@ app.io.on('connection', (socket) => {
 						player_one.turn = false;
 						player_two.turn = true;
 
+						info_msg.mode = 'info';
+						info_msg.msg = "player1 남은 카드: " + player_one.life;
+
+						app.io.emit('server_message', info_msg);    // <<<<<<<<<<<<<<<< emit
+
 					} else if  (player_two.socketId === socket.id) {
 
 						if(!msg.match) player_two.life--;
 						player_two.turn = false;
 						player_one.turn = true;
+
+						info_msg.mode = 'info';
+						info_msg.msg = "player2 남은 카드: " + player_two.life;
+
+						app.io.emit('server_message', info_msg);    // <<<<<<<<<<<<<<<< emit
 
 					}
 					info_msg.mode = 'bell';
@@ -320,12 +340,21 @@ app.io.on('connection', (socket) => {
 
 					app.io.to(two_room).emit('server_message', info_msg);   // <<<<<<<<<<<<<<<< emit
 
-				} else {
-					console.log("플레이어 끝. 엔딩처리로 ㄱㄱㄱ");
-					
-					
+				} else if (player_one.life == 0) {
+					console.log("플레이어1 0 됐음");
+
+					app.io.to(player_one.socketId).emit('lose');
+					app.io.to(player_two.socketId).emit('win');
+
+
+				} else if (player_two.life == 0) {
+					console.log("플레이어2 0 됐음");
+
+					app.io.to(player_one.socketId).emit('win');
+					app.io.to(player_two.socketId).emit('lose');
 
 				}
+
 
 				break;
 
@@ -367,6 +396,9 @@ app.io.on('connection', (socket) => {
 		if(socket.id == two_room){
 			console.log("방장이 방을 나갔음");
 			// 방이름 바꾸기
+
+			two_room = '';
+			app.io.emit('clean');	
 		} 
 
 		// 방정보에서 해당 소켓 삭제
