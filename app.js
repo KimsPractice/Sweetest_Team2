@@ -145,8 +145,8 @@ app.io.on('connection', (socket) => {
 				info_msg.mode = "start";
 				info_msg.msg = player_one;
 
-				app.io.to(two_room).emit('server_message', info_msg);  // <<<<<<<<<<<<<<<< emit
-				app.io.emit('server_message', room_info);  				// <<<<<<<<<<<<<<<< emit
+				app.io.to(two_room).emit('server_message', info_msg);   // <<<<<<<<<<<<<<<< emit
+				app.io.emit('server_message', room_info);   // <<<<<<<<<<<<<<<< emit
 
 				player_one.info();
 
@@ -168,8 +168,8 @@ app.io.on('connection', (socket) => {
 					info_msg.mode = "start";
 					info_msg.msg = player_two;
 
-					app.io.to(two_room).emit('server_message', info_msg);  // <<<<<<<<<<<<<<<< emit
-					app.io.emit('server_message', room_info); 			 	// <<<<<<<<<<<<<<<< emit
+					app.io.to(two_room).emit('server_message', info_msg);   // <<<<<<<<<<<<<<<< emit
+					app.io.emit('server_message', room_info);    // <<<<<<<<<<<<<<<< emit
 					
 					player_two.info();
 
@@ -206,7 +206,7 @@ app.io.on('connection', (socket) => {
 
 				info_msg.mode = 'info';
 				info_msg.msg = "player1 남은 카드: " + player_one.life;
-				app.io.emit('server_message', info_msg);    // <<<<<<<<<<<<<<<< emit
+				app.io.emit('server_message', info_msg);   // <<<<<<<<<<<<<<<< emit
 
 			} else if (player_two.socketId == socket.id) {
 				player_two.turn = false;
@@ -228,7 +228,7 @@ app.io.on('connection', (socket) => {
 				var card_one = shuffled_card_list[0];
 
 				match = Number(card_one.substring(1, 2)) == 5 ? true : false;
-				app.io.to(two_room).emit('gift_card', card_one, idx, match, ask);  // <<<<<<<<<<<<<<<< emit
+				app.io.to(two_room).emit('gift_card', card_one, idx, match, ask);   // <<<<<<<<<<<<<<<< emit
 				idx++;
 
 			} else if (idx != 0 && idx < shuffled_card_list.length) {
@@ -265,7 +265,7 @@ app.io.on('connection', (socket) => {
 			info_msg.mode = "card_open_after";
 			info_msg.msg = [player_one, player_two];
 
-			app.io.to(two_room).emit('server_message', info_msg);  // <<<<<<<<<<<<<<<< emit
+			app.io.to(two_room).emit('server_message', info_msg);   // <<<<<<<<<<<<<<<< emit
 
 		}else {
 			console.log("엔딩처리 ㄱㄱㄱㄱㄱㄱ", player_one.life, player_two.life);
@@ -343,15 +343,15 @@ app.io.on('connection', (socket) => {
 				} else if (player_one.life == 0) {
 					console.log("플레이어1 0 됐음");
 
-					app.io.to(player_one.socketId).emit('lose');
-					app.io.to(player_two.socketId).emit('win');
+					app.io.to(player_one.socketId).emit('lose');   // <<<<<<<<<<<<<<<< emit
+					app.io.to(player_two.socketId).emit('win');   // <<<<<<<<<<<<<<<< emit
 
 
 				} else if (player_two.life == 0) {
 					console.log("플레이어2 0 됐음");
 
-					app.io.to(player_one.socketId).emit('win');
-					app.io.to(player_two.socketId).emit('lose');
+					app.io.to(player_one.socketId).emit('win');   // <<<<<<<<<<<<<<<< emit
+					app.io.to(player_two.socketId).emit('lose');   // <<<<<<<<<<<<<<<< emit
 
 				}
 
