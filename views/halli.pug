@@ -23,7 +23,8 @@ block content
 				
 			
 		div#tmpDiv(style="position:absolute;top:500px;")
-			button(id="tmp1") (임시) 입장
+			button(id="tmp1") 레디
+			br
 			br
 			button(id="tmp2") 카드 초기화
 
@@ -37,6 +38,7 @@ block content
 		var is_match;
 		var count;
 		var nickName = document.getElementById('nickname')		// 내이름 
+
 		
 		// 카드 이름 매칭
 		function makeName(card) {
@@ -63,6 +65,12 @@ block content
 		//image.src = 'file:///C:/Users/grutech/Desktop/Sweetest_Team2/Image/apple.png'
 		//console.log(image.src);
 		//userCloseCard.appendChild(image);
+
+
+		(function(){
+			$("#cardOpenBtn")[0].disabled = true;
+			nickName.innerHTML = name;
+		})();
 
 
 		// 소켓 통신
@@ -103,11 +111,38 @@ block content
 					$("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
 					$("#userOpenCardImg")[0].src = "";
 
+
+					// 턴 처리
+
+
+
+
+
+
+
+
 					break;
 					
 				case "card_open_after" :
 
 					console.log("card_open_after: ", msg);
+
+					// 턴 처리
+					if(msg.msg[0].turn){
+						console.log("1P의 턴");
+						if(msg.msg[1].socketId == socket.id){
+							$("#cardOpenBtn")[0].disabled = true;
+						} else {
+							$("#cardOpenBtn")[0].disabled = false;
+						}
+					} else {
+						console.log("2P의 턴");
+						if(msg.msg[0].socketId == socket.id){
+							$("#cardOpenBtn")[0].disabled = true;
+						} else {
+							$("#cardOpenBtn")[0].disabled = false;
+						}
+					}
 
 					break;
 
@@ -140,11 +175,9 @@ block content
 
 		// 카드 요청
 		$('#cardOpenBtn').click(() => { 
-			if(turn) {
-				socket.emit('show_me_the_card');
-			} else {
-				console.log("상대방의 턴");
-			}
+
+			socket.emit('show_me_the_card');
+
 		});
 
 
@@ -177,6 +210,8 @@ block content
 
 
 
+
+
 		/////////////// 테스트용
 
 		
@@ -186,9 +221,11 @@ block content
 		});
 
 
-		$('#tmp1').click(() => { // 방 입장용(게임시작용)
+		$('#tmp1').click(() => { // 레디 (방에 입장) 2P도 레디 해야 카드 오픈 누를 수 있게 해야함
 
-			nickName.innerHTML = name;
+			
+			$("#tmp1")[0].disabled = true;
+			$("#cardOpenBtn")[0].disabled = false;
 
 			console.log('click go');
 			var msg = {
@@ -198,7 +235,7 @@ block content
 
 			socket.emit('go'); 
 			socket.emit('client_message', msg);
-		
+
 		});
 
 		$('#tmp2').click(() => { 
@@ -206,8 +243,12 @@ block content
 
 			$("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
 			$("#userOpenCardImg")[0].src = "";
-			
+			$("#tmp1")[0].disabled = false;	
+
 			socket.emit('reset');
 		});
 
+
+
+		
 

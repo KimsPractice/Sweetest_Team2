@@ -195,6 +195,7 @@ app.io.on('connection', (socket) => {
 			var match = false;
 			var ask = "";
 			
+			// 카드 요청한 플레이어 확인해서 상태 변경
 			if(player_one.socketId == socket.id) {
 				player_one.turn = false;
 				player_two.turn = true;
@@ -321,6 +322,9 @@ app.io.on('connection', (socket) => {
 
 				} else {
 					console.log("플레이어 끝. 엔딩처리로 ㄱㄱㄱ");
+					
+					
+
 				}
 
 				break;
@@ -357,19 +361,20 @@ app.io.on('connection', (socket) => {
 
 	})
 
-
 	.on('disconnect', () => {
 		// app.io.emit('clear', socket.id);  // <<<<<<<<<<<<<<<< emit
 
 		if(socket.id == two_room){
 			console.log("방장이 방을 나갔음");
+			// 방이름 바꾸기
 		} 
 
 		// 방정보에서 해당 소켓 삭제
 		var socket_index = room_info.socketList.indexOf(socket.id);
 		room_info.socketList.splice(socket_index, 1);
-		
 
+		socket.leave(two_room);
+		
 		console.log('연결해제: ' + socket.id);
 		delete socket_list[socket.id];
 	})
