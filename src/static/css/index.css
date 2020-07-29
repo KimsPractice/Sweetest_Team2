@@ -1,0 +1,93 @@
+
+
+a {
+    color: #00B7FF;
+  }
+  
+#wrap{
+ 
+    line-height: 50%;
+    width: 420px;
+    height: 840px;
+    margin: 0 auto;
+    background-color:#008000
+ 
+}
+
+#header{
+    margin-top: 10px;
+    position: relative;
+    height: 25%;
+    background: #9cf; 
+    text-align: center;
+  
+  
+}
+
+#text{
+    position: absolute;
+    top: 50%;
+    left: 20%;
+    font-size: 40px;
+   
+}
+
+#content{
+    height: 70%;
+    background: #0fc;
+}
+
+#footer{
+    height: 25%;
+    background: #ddd;
+    margin-bottom: 10px;
+   
+}
+
+#userName{
+    text-align: center;
+    margin : 0 auto;
+  
+ 
+  
+}
+
+#btnSumit{  
+   
+    text-align: center;
+    margin-left: 5px;
+    
+ 
+    
+}
+#btnUserName{
+    
+    text-align: center;
+    margin-left: 5px;
+    
+
+}
+
+#btnStart{  
+  
+    margin : 0 auto;
+    display: block;
+    text-align: center;
+}
+
+
+span{
+    display : block;
+    margin : 0 auto;
+    text-align: center;
+}
+
+    
+
+form{
+    
+     margin : 0 auto;
+     text-align: center;
+}
+
+

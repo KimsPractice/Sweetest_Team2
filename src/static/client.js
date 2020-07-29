@@ -1,42 +1,41 @@
-let socket = io();
+let socket = io("/");
 let turn = 0;
 let is_match;
 let count;
 
 // 소켓 통신
-socket
-  .on("hihi", (list) => {
-    // 접속한 소켓 확인용
-    let socket_list = [];
-    let userList = "";
-    console.log("SocketList: " + JSON.stringify(list));
+socket.on("hihi", (list) => {
+  // 접속한 소켓 확인용
+  let socket_list = [];
+  let userList = "";
+  console.log("SocketList: " + JSON.stringify(list));
 
-    list.forEach((socket) => {
-      userList += "<li id=" + socket + ">소켓ID: " + socket + "</li>";
-    });
-
-    $("#param1").html(userList);
-  })
-  .on("clear", (id) => {
-    // 나가면 소켓 확인용 리스트에서 지움
-    $("#param1 li#" + id).remove();
-  })
-  .on("info", (msg) => {
-    // 서버에서 보내는 정보 메시지 받음
-    console.log(msg);
-  })
-  .on("gift_card", (card_one, idx, match) => {
-    // 카드 배분. 받은걸로 액션 처리.
-    is_match = match; // 다음 단계를 위해서 저장
-    count = idx; // 다음 단계를 위해서 저장
-
-    console.log("서버로부터 카드 받음(idx:" + idx + ")", card_one);
-    console.log("카드 5 ? : " + match);
-
-    if (idx == 55) {
-      console.log("카드 다 썼음. 엔딩처리하면 됨");
-    }
+  list.forEach((socket) => {
+    userList += "<li id=" + socket + ">소켓ID: " + socket + "</li>";
   });
+
+  $("#param1").html(userList);
+});
+socket.on("clear", (id) => {
+  // 나가면 소켓 확인용 리스트에서 지움
+  $("#param1 li#" + id).remove();
+});
+socket.on("info", (msg) => {
+  // 서버에서 보내는 정보 메시지 받음
+  console.log(msg);
+});
+socket.on("gift_card", (card_one, idx, match) => {
+  // 카드 배분. 받은걸로 액션 처리.
+  is_match = match; // 다음 단계를 위해서 저장
+  count = idx; // 다음 단계를 위해서 저장
+
+  console.log("서버로부터 카드 받음(idx:" + idx + ")", card_one);
+  console.log("카드 5 ? : " + match);
+
+  if (idx == 55) {
+    console.log("카드 다 썼음. 엔딩처리하면 됨");
+  }
+});
 
 $("#go").click(() => {
   // 방 입장용(게임시작용)

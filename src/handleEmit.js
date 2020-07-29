@@ -1,65 +1,137 @@
 export const handler = {
-  go: (socket) => {
-    console.log(socket);
-    let room_for_1p = "";
+  go: () => {
+    // app.io.emit('hihi', socket_list);
 
-    if (room_for_1p == "") {
-      room_for_1p = "room_" + socket.id;
+    if (two_room == "") {
+      two_room = socket.id;
 
-      socket.join(room_for_1p, () => {
-        var player_one = new player("1p", socket.id, 28);
-        var info_msg = id + " 소켓이 방을 생성함. 방이름: " + room_for_1p;
-        io.to(room_for_1p).emit("info", info_msg);
-        io.to(room_for_1p).emit("info", wait_msg);
-        // 클라에 사용자 정보 어떤거 보낼지 생각해야
+      // 방정보 셋팅
+      room_info.roomName = two_room;
+
+      socket.join(two_room, () => {
+        player_one = new player("1p", null, true, socket.id, 28);
+        player_two = new player("2p", null, false, null, 28);
+
+        room_info.socketList[0] = socket.id;
+
+        info_msg.mode = "start";
+        info_msg.msg = player_one;
+
+        app.io.to(two_room).emit("server_message", info_msg); // <<<<<<<<<<<<<<<< emit
+        app.io.emit("server_message", room_info); // <<<<<<<<<<<<<<<< emit
+
         player_one.info();
 
-        console.log(socket.id + " 소켓이 방을 생성함. 방이름: " + room_for_1p);
-        console.log(wait_msg);
+        console.log(info_msg);
+        console.log("room_info: ", room_info);
       });
-    } else {
-      socket.join(room_for_1p, () => {
-        // 입장을 두 명으로 제한해야 함.
-        var info_msg =
-          socket.id + " 소켓이 방에 입장함. 방이름: " + room_for_1p;
-        io.to(room_for_1p).emit("info", info_msg);
-        var player_two = new player("2p", socket.id, 28);
-        player_two.info();
+    } else if (two_room != socket.id) {
+      // 입장을 두 명으로 제한
+      if (room_info.socketList.length < 2) {
+        socket.join(two_room, () => {
+          player_two.socketId = socket.id;
+          room_info.socketList[1] = socket.id;
 
-        console.log(socket.id + " 소켓이 방에 입장함 방이름: " + room_for_1p);
-      });
+          info_msg.mode = "start";
+          info_msg.msg = player_two;
 
-      var rooms = socket.adapter.rooms;
-      io.to(room_for_1p).emit("방정보", JSON.stringify(rooms));
+          app.io.to(two_room).emit("server_message", info_msg); // <<<<<<<<<<<<<<<< emit
+          app.io.emit("server_message", room_info); // <<<<<<<<<<<<<<<< emit
 
-      console.log("방정보: " + JSON.stringify(rooms));
+          player_two.info();
+
+          console.log(info_msg);
+          console.log("room_info: ", room_info);
+        });
+      }
+
+      // var rooms = socket.adapter.rooms;
+      // app.io.to(two_room).emit('방정보', JSON.stringify(rooms));
+
+      // console.log("방정보: " + JSON.stringify(rooms));
     }
   },
 
   show_me_the_card: () => {
-    let idx = 0;
-    var match = false;
+    if (player_one.life > 0 && player_two.life > 0) {
+      var match = false;
+      var ask = "";
 
-    if (idx == 0) {
-      // 첫 카드
-      var card_one = shuffled_card_list[0];
-      // 만약 최초가 5인데 상대가 종을 친 경우는?? 첫카드는 종 못치게 해야할거같은디...
-      io.to(room_for_1p).emit("gift_card", card_one, idx, match);
-      idx++;
-    } else if (idx != 0 && idx < shuffled_card_list.length) {
-      // 바로 전 카드와 비교
-      var card_before = shuffled_card_list[idx - 1];
-      var card_one = shuffled_card_list[idx];
+      // 카드 요청한 플레이어 확인해서 상태 변경
+      if (player_one.socketId == socket.id) {
+        player_one.turn = false;
+        player_two.turn = true;
 
-      var is_five =
-        Number(card_one.substring(1, 2)) + Number(card_before.substring(1, 2));
+        ask = player_one.socketId;
 
-      if (Number(card_one.substring(1, 2)) == 5 || is_five == 5) match = true;
+        player_one.life--;
 
-      io.to(room_for_1p).emit("gift_card", card_one, idx, match);
-      idx++;
+        info_msg.mode = "info";
+        info_msg.msg = "player1 남은 카드: " + player_one.life;
+        app.io.emit("server_message", info_msg); // <<<<<<<<<<<<<<<< emit
+      } else if (player_two.socketId == socket.id) {
+        player_two.turn = false;
+        player_one.turn = true;
+
+        ask = player_two.socketId;
+
+        player_two.life--;
+
+        info_msg.mode = "info";
+        info_msg.msg = "player2 남은 카드: " + player_two.life;
+        app.io.emit("server_message", info_msg); // <<<<<<<<<<<<<<<< emit
+      }
+
+      if (idx == 0) {
+        // 첫 카드.
+        //처음 종을 쳤을 경우, 상대방의 안깐 카드를 주는지(카드 뒤집는 횟수를 늘리는지)
+        //바닥에 쌓는 카드를 늘리는지
+
+        var card_one = shuffled_card_list[0];
+
+        match = Number(card_one.substring(1, 2)) == 5 ? true : false;
+        app.io.to(two_room).emit("gift_card", card_one, idx, match, ask); // <<<<<<<<<<<<<<<< emit
+        idx++;
+      } else if (idx != 0 && idx < shuffled_card_list.length) {
+        // 바로 전 카드와 비교
+        var card_before = shuffled_card_list[idx - 1];
+        var card_one = shuffled_card_list[idx];
+        var card_before_num = Number(card_before.substring(1, 2));
+        var card_one_num = Number(card_one.substring(1, 2));
+
+        var same_kind =
+          card_one.substring(0, 1) == card_before.substring(0, 1)
+            ? true
+            : false;
+
+        if (same_kind) {
+          var make_five = card_before_num + card_one_num == 5 ? true : false;
+        }
+
+        // 카드 숫자가 5일 때 종을 안치고 넘어가서 바닥엔 5가 계속 있는 상태일 때의 예외처리 필요
+
+        match = make_five || card_one_num == 5 ? true : false;
+        app.io.to(two_room).emit("gift_card", card_one, idx, match, ask); // <<<<<<<<<<<<<<<< emit
+        idx++;
+
+        console.log(
+          card_before,
+          card_one,
+          "  >>>  same_kind: ",
+          same_kind,
+          " / match: ",
+          match
+        );
+      } else {
+        console.log("카드 다 줬음. 엔딩은 1P 2P 카운트 비교해서");
+      }
+
+      info_msg.mode = "card_open_after";
+      info_msg.msg = [player_one, player_two];
+
+      app.io.to(two_room).emit("server_message", info_msg); // <<<<<<<<<<<<<<<< emit
     } else {
-      console.log("카드 다 줬음. 엔딩은 1P 2P 카운트 비교해서");
+      console.log("엔딩처리 ㄱㄱㄱㄱㄱㄱ", player_one.life, player_two.life);
     }
   },
 

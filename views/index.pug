@@ -1,0 +1,86 @@
+link(rel='stylesheet' href='/stylesheets/index.css')
+link(rel='stylesheet' href='/stylesheets/reset.css')
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+block content
+
+	div#wrap
+		div#header
+			div#text HALLY GALLY  
+		div#content 
+		div#footer
+			form(action="/halli")
+				input(type="text" id="userName" placeholder="닉네임 입력하세요")
+				input(type="button" id="btnName" value="확인" onClick="btnUserName()")
+				br
+				//- button(id="btnStart" disabled="disabled" onClick="location.href='/halli'") WAIT...
+				button(type="submit" id="btnStart") GOGO
+			br
+
+			br
+			br
+			span(id="checkNumberUsers")
+			br
+
+
+
+
+
+
+script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js')
+//- script(src='https://cdn.socket.io/socket.io-1.4.5.js')
+script.
+
+
+	var name;
+
+
+		function btn_on(){
+			btnStart.disabled = false;
+			btnStart.innerHTML = 'GAME START';
+		} 
+
+		function btnUserName(){
+
+			temp = document.getElementById('userName').value;
+			name = temp;
+
+			btnName.disabled = true;
+			//userCnt++;
+			//console.log( userCnt );   
+		}
+
+		var socket = io(); 
+
+			socket.on('hihi', (list) => { // 접속한 소켓 확인용
+			var socket_list = '';
+			var currentNumberUsers = Object.keys(list).length; //접속자 수 체크
+			console.log("SocketList: " + JSON.stringify(list));
+
+			for(var socket in list){
+				console.log("socket id="+socket);
+				console.log('userName:'+ name); //유저 닉네임
+
+				}
+
+				$('#checkNumberUsers').html("인원 수 : "+currentNumberUsers+"/2");
+
+				if(currentNumberUsers === 2){  //인원수가 2명일때 GAME START 버튼활성화
+					btn_on();
+				}
+
+
+
+		})
+
+
+
+
+
+
+
+
+
+
+
+
+

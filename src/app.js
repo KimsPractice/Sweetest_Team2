@@ -22,31 +22,57 @@ const io = socketIO.listen(server);
 
 // 카드 생성
 
-const { cardDeck, shuffledDeck } = makeCardDeck();
-console.log(`기존 덱: ${cardDeck}`);
-console.log(`셔플 덱: ${shuffledDeck}`);
+const shuffledDeck = makeCardDeck();
 // 준비물 ========================================================================
 
 let socket_list = [];
 
 // 플레이어 생성자. [ roll: 1p인지 2p인지 / id: socket.id / life: 남은 카드 갯수 ]
 class player {
-  constructor(roll, id, life) {
-    this.roll = roll;
-    this.id = id;
-    this.life = 28; // 1:1만 할거라 일단 28로 고정. 여러명은 나중에 생각
-    this.info = () => {
-      console.log("=======" + this.roll + " 플레이어 정보 =======");
-      console.log(" socket.id: " + id);
-      console.log(" 소지 카드: " + life);
-      console.log("================================");
-    };
-  }
+	constructor(roll, name, turn, socketId, life) {
+		this.roll = roll;
+		this.name = name;
+		this.turn = turn;
+		this.socketId = socketId;
+		this.life = 28; // 1:1만 할거라 일단 28로 고정. 여러명은 나중에 생각
+		this.info = () => {
+			console.log("	======== "+roll+"player info =======");
+			console.log("	name: " + name);
+			console.log("	turn: " + turn);
+			console.log("	socket.id: " + socketId);
+			console.log("	소지 카드: " + life);
+		};
+	}
+}
+
+
+// 필요한 변수모음
+
+const player_one;
+const player_two;
+
+const socket_list = {};
+
+const two_room = ''; // 2인용 방
+
+const idx = 0;
+
+const room_info = {
+	roomName: null,
+	socketList : [],
+}
+
+const info_msg = {
+	mode : "info",
+	msg : null
 }
 
 // 소켓 통신 =====================================================================
 
 io.on("connection", (socket) => {
+
+  const serverSocket = socket;
+  
   socket_list.push(socket.id);
 
   // Messasge Zone
