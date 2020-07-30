@@ -21,14 +21,16 @@ block content
 				button(id="cardOpenBtn") 카드 오픈
 		span(id="nickname")
 				
-			
+		
+		//- 임시
 		div#tmpDiv(style="position:absolute;top:500px;")
 			button(id="tmp1") 레디
 			br
 			br
 			button(id="tmp2") 카드 초기화
 
-
+		div#tmpDiv(style="position:absolute;top:100px;left:120px")
+			span(id="otherName")
 			
 	script(src='https://cdn.socket.io/socket.io-1.4.5.js')
 	script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js')
@@ -96,6 +98,13 @@ block content
 
 					console.log("유저정보: ", msg)
 
+					// 화면 상단에 상대방 닉네임 표출. 입장하면 표출되도록 수정해야함
+					if (msg.msg[0].socketId == socket.id) {
+						$("#otherName").text(msg.msg[1].name);
+					} else if (msg.msg[1].socketId == socket.id) {
+						$("#otherName").text(msg.msg[0].name);
+					}
+
 					break;
 
 				case "info" :
@@ -123,9 +132,9 @@ block content
 
 					break;
 					
-				case "card_open_after" :
+				case "after" :
 
-					console.log("card_open_after: ", msg);
+					console.log("after: ", msg);
 
 					// 턴 처리
 					if(msg.msg[0].turn){
@@ -190,7 +199,7 @@ block content
 		});
 
 
-		// 벨
+		// 벨 
 		$('#big_bell').click(() => {
 
 			var msg = {
@@ -213,6 +222,8 @@ block content
 				socket.emit('client_message', msg);
 			}
 
+			is_match = false;
+
 		});
 
 
@@ -232,7 +243,7 @@ block content
 
 
 		$('#tmp1').click(() => { // 레디 (방에 입장) 2P도 레디 해야 카드 오픈 누를 수 있게 해야함
-
+			// 상대방 아이디 상단에 노출시켜야 함
 			
 			$("#tmp1")[0].disabled = true;
 			$("#cardOpenBtn")[0].disabled = false;
