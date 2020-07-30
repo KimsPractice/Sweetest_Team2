@@ -1,4 +1,4 @@
-export const makeCardDeck = () => {
+const makeCardDeck = () => {
   // 카드 생성
   const alpha_list = ["A", "B", "C", "D"]; // 종류
   const num_list = [1, 2, 3, 4, 5]; // 숫자
@@ -36,3 +36,5 @@ export const makeCardDeck = () => {
   console.log("=== SHUFFLED CARD LIST: ", shuffled_card_list);
   return shuffled_card_list;
 };
+
+export default makeCardDeck;
