@@ -4,24 +4,25 @@ block content
 		div#main
 			div#userCard
 				Img(id='userCardImg')
-
 			div#userOpenCard
 				Img(id='userOpenCardImg' src="")
-				Img(id="userCloseCardImg")
-				
+				//Img(id="userCloseCardImg")
+				 
 			div#bell
 				button(id="big_bell")  
 
 			div#myOpenCard
-				Img(id='myOpenCardImg' src="")
-				Img(id="myCloseCardImg")
+				Img(id='myOpenCardImg')
+				
 				
 			div#myCard
 				Img(id='myCardImg')
-				button(id="cardOpenBtn") 카드 오픈
-		span(id="nickname")
+
+			button(id="cardOpenBtn") 카드 오픈
+	
 				
-			
+		span(id="nickname")
+
 		div#tmpDiv(style="position:absolute;top:500px;")
 			button(id="tmp1") 레디
 			br
@@ -37,7 +38,17 @@ block content
 		var turn = true;
 		var is_match;
 		var count;
-		var nickName = document.getElementById('nickname')		// 내이름 
+		var nickName = document.getElementById('nickname')		// 내이름
+		var cardCnt =0;
+		var userCard = document.getElementById('userCard');
+		var myCard =  document.getElementById('myCard');
+		var createCardImg = document.createElement('createCardImg');
+		var createCardImg2 = document.createElement('createCardImg2');
+		var myOpenCard = document.getElementById('myOpenCard');
+
+
+
+		console.log() 
 
 		
 		// 카드 이름 매칭
@@ -90,17 +101,23 @@ block content
 		.on('server_message', (msg) => {
 			
 			var msg_mode = msg.mode;
+			var msg_life = msg.msg
+			
+			
+
 
 			switch (msg_mode){
 				case "start" :
 
 					console.log("유저정보: ", msg)
+					
 
 					break;
-
+ 
 				case "info" :
 
-					console.log(msg);
+					console.log("1p life",msg.life_1);
+					console.log("2p life",msg.life_2);
 
 					break;
 
@@ -114,13 +131,6 @@ block content
 
 					// 턴 처리
 
-
-
-
-
-
-
-
 					break;
 					
 				case "card_open_after" :
@@ -132,9 +142,16 @@ block content
 						console.log("1P의 턴");
 						(msg.msg[1].socketId == socket.id) ? $("#cardOpenBtn")[0].disabled = true : $("#cardOpenBtn")[0].disabled = false;
 					
+					
 					} else {
 						console.log("2P의 턴");
 						(msg.msg[0].socketId == socket.id) ? $("#cardOpenBtn")[0].disabled = true : $("#cardOpenBtn")[0].disabled = false;
+					
+					
+					
+						
+						
+					
 					}
 
 					break;
@@ -156,10 +173,36 @@ block content
 
 			console.log('(idx:'+idx+')', card_name, ' / match: ', match);
 
+
+
+			if(ask == socket.id){
+			
+				cardCnt++;
+				 $("#myOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
+				 $("#myCardImg2").remove()
+				
+				if(cardCnt>=2){
+					var myCloseCardImg = document.createElement('img')
+					myOpenCard.appendChild(myCloseCardImg)
+					myCloseCardImg.id = 'myCloseCardImg'
+				}
+
+				
+			
+			
+			
+
+				
+			}else{
+				 $("#userOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
+				$("#userCardImg1").remove()
+			}
+
 			// 카드를 요청한 소켓이 본인이면 본인자리에, 상대방이면 상대방 자리에 카드 배치
-			(ask == socket.id) ? 
-				$("#myOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
-				: $("#userOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png";
+		/*	(ask == socket.id) ? $("#myOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
+			 $("#myCardImg2").remove()
+			 : $("#userOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
+			 $("#userCardImg1").remove() */
 
 			if (idx == 55){
 				console.log("카드 다 썼음. 엔딩처리하면 됨");
@@ -215,12 +258,6 @@ block content
 
 		});
 
-
-
-
-
-
-
 		/////////////// 테스트용
 
 		
@@ -245,6 +282,25 @@ block content
 
 			socket.emit('go'); 
 			socket.emit('client_message', msg);
+			
+			
+			for(var i=0; i<28; i++){   //1p 카드 겹치는 효과
+				
+				var createCardImg = document.createElement('img');
+				userCard.appendChild(createCardImg)
+				createCardImg.id = 'userCardImg1'
+
+			}
+				for(var i=0; i<28; i++){   // 2p 카드 겹치는 효과
+				
+				var createCardImg2 = document.createElement('img');
+				myCard.appendChild(createCardImg2)
+				createCardImg2.id = 'myCardImg2'
+
+			}
+
+
+	
 
 		});
 
