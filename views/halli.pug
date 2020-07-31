@@ -91,7 +91,6 @@ block content
 			$('#param1').html(socket_list);
 		})
 
-
 		.on('start', (msg) => {
 			console.log("유저정보: ", msg)
 		})
@@ -107,6 +106,7 @@ block content
 			$("#userOpenCardImg")[0].src = "";
 		})
 
+		// 카드 오픈 후의 처리
 		.on('card_open_after', (msg) => {
 			console.log("card_open_after: ", msg);
 
@@ -120,11 +120,11 @@ block content
 				console.log("2P의 턴");
 				(msg.msg[0].socketId == socket.id) ? $("#cardOpenBtn")[0].disabled = true : $("#cardOpenBtn")[0].disabled = false;
 			}
-			
+
 		})
 
 
-		// 카드 배분. 받은걸로 액션 처리.
+		// 카드 받아서 처리
 		.on('gift_card', (card, idx, match, ask) => {
 
 			var folder_name = makeName(card);
@@ -146,19 +146,13 @@ block content
 					myOpenCard.appendChild(myCloseCardImg)
 					myCloseCardImg.id = 'myCloseCardImg'
 				}
-
 				
 			}else{
 				 $("#userOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
 				$("#userCardImg1").remove()
 			}
 
-			// 카드를 요청한 소켓이 본인이면 본인자리에, 상대방이면 상대방 자리에 카드 배치
-		/*	(ask == socket.id) ? $("#myOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
-			 $("#myCardImg2").remove()
-			 : $("#userOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
-			 $("#userCardImg1").remove() */
-
+			
 			if (idx == 55){
 				console.log("카드 다 썼음. 엔딩처리하면 됨");
 			}
@@ -190,24 +184,21 @@ block content
 		// 벨
 		$('#big_bell').click(() => {
 
-			var msg = {
-				mode : "bell",
-				match : null 
-			}
+			var match = null;
 
 			if(is_match) {
 				// 쓴 카드 회수하는 것은 승패에 영향이 없지만 추가해야할까... 
 				// 한 번이라도 종을 친 적이 있다면 0 됐을 때 카드 뒷면 이미지 보여지게 처리하면 됨. 없으면 맨마닥.
 				
-				msg.match = true;
+				match = true;
 
-				socket.emit('client_message', msg);
+				socket.emit('bell', match);
 
 			} else { 
 
-				msg.match = false;
+				match = false;
 
-				socket.emit('client_message', msg);
+				socket.emit('bell', match);
 			}
 
 		});
@@ -229,13 +220,10 @@ block content
 			$("#cardOpenBtn")[0].disabled = false;
 
 			console.log('click go');
-			var msg = {
-				mode : "user_init",
-				userName : name
-			}
+			var userName = name
 
 			socket.emit('go'); 
-			socket.emit('client_message', msg);
+			socket.emit('user_init', userName);
 			
 			
 			for(var i=0; i<28; i++){   //1p 카드 겹치는 효과
@@ -260,10 +248,6 @@ block content
 
 		$('#tmp2').click(() => { 
 			console.log("게임을 초기화합니다.");
-
-			// $("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
-			// $("#userOpenCardImg")[0].src = "";
-			
 
 			socket.emit('reset');
 		});
