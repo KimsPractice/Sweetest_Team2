@@ -104,6 +104,7 @@ var socket_list = {};
 var two_room = ''; // 2인용 방
 
 var idx = 0;
+var bell_flag = 0;
 
 var room_info = {
 	roomName: null,
