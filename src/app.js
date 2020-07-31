@@ -11,9 +11,13 @@ app.set("views", `${__dirname}/views`);
 
 app.use(logger("dev"));
 app.use(express.static(`${__dirname}/static`));
+// app.use();
 
 app.get("/", (req, res) => res.render("index"));
-app.get("/halli", (req, res) => res.render("halli"));
+app.get("/halli", (req, res) => {
+  const { userNickname } = req.query;
+  res.render("halli", { userNickname });
+});
 
 const server = app.listen(PORT, () =>
   console.log(`Server is running... PORT:${PORT}`)

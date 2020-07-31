@@ -1,3 +1,9 @@
-const userName = document.querySelector("#userName");
+const userName = document.getElementById("userName");
 
-console.log(userName);
+if (userName) {
+  userName.addEventListener("keydown", (e) => {
+    if (e.keyCode === 13) {
+      e.preventDefault();
+    }
+  });
+}
