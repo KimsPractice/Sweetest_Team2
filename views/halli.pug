@@ -37,7 +37,6 @@ block content
 		var socket = io();
 		var turn = true;
 		var is_match;
-		var count;
 		var nickName = document.getElementById('nickname')		// 내이름
 		var cardCnt =0;
 		var userCard = document.getElementById('userCard');
@@ -45,10 +44,6 @@ block content
 		var createCardImg = document.createElement('createCardImg');
 		var createCardImg2 = document.createElement('createCardImg2');
 		var myOpenCard = document.getElementById('myOpenCard');
-
-
-
-		console.log() 
 
 		
 		// 카드 이름 매칭
@@ -97,69 +92,35 @@ block content
 		})
 
 
-		// 서버로부터 전달받은 정보 메세지를 종류별로 처리
-		.on('server_message', (msg) => {
+		.on('start', (msg) => {
+			console.log("유저정보: ", msg)
+		})
+
+		.on('info', (msg) => {
+			console.log("info",msg.msg);
+		})
+
+		.on('bell', (msg) => {
+			console.log("bell: ", msg);
+
+			$("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
+			$("#userOpenCardImg")[0].src = "";
+		})
+
+		.on('card_open_after', (msg) => {
+			console.log("card_open_after: ", msg);
+
+			// 턴 처리
+			if(msg.msg[0].turn){
+				console.log("1P의 턴");
+				(msg.msg[1].socketId == socket.id) ? $("#cardOpenBtn")[0].disabled = true : $("#cardOpenBtn")[0].disabled = false;
 			
-			var msg_mode = msg.mode;
-			var msg_life = msg.msg
 			
-			
-
-
-			switch (msg_mode){
-				case "start" :
-
-					console.log("유저정보: ", msg)
-					
-
-					break;
- 
-				case "info" :
-
-					console.log("1p life",msg.life_1);
-					console.log("2p life",msg.life_2);
-
-					break;
-
-				case "bell" :
-
-					console.log("bell: ", msg);
-
-					$("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
-					$("#userOpenCardImg")[0].src = "";
-
-
-					// 턴 처리
-
-					break;
-					
-				case "card_open_after" :
-
-					console.log("card_open_after: ", msg);
-
-					// 턴 처리
-					if(msg.msg[0].turn){
-						console.log("1P의 턴");
-						(msg.msg[1].socketId == socket.id) ? $("#cardOpenBtn")[0].disabled = true : $("#cardOpenBtn")[0].disabled = false;
-					
-					
-					} else {
-						console.log("2P의 턴");
-						(msg.msg[0].socketId == socket.id) ? $("#cardOpenBtn")[0].disabled = true : $("#cardOpenBtn")[0].disabled = false;
-					
-					
-					
-						
-						
-					
-					}
-
-					break;
-
-				default :
-					console.log(msg);
+			} else {
+				console.log("2P의 턴");
+				(msg.msg[0].socketId == socket.id) ? $("#cardOpenBtn")[0].disabled = true : $("#cardOpenBtn")[0].disabled = false;
 			}
-
+			
 		})
 
 
@@ -174,7 +135,6 @@ block content
 			console.log('(idx:'+idx+')', card_name, ' / match: ', match);
 
 
-
 			if(ask == socket.id){
 			
 				cardCnt++;
@@ -186,11 +146,6 @@ block content
 					myOpenCard.appendChild(myCloseCardImg)
 					myCloseCardImg.id = 'myCloseCardImg'
 				}
-
-				
-			
-			
-			
 
 				
 			}else{
@@ -221,7 +176,6 @@ block content
 			console.log("패배");
 
 		})
-
 
 
 
@@ -317,3 +271,4 @@ block content
 
 
 		
+

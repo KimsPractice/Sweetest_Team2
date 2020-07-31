@@ -143,7 +143,7 @@ app.io.on('connection', (socket) => {
 
 				room_info.socketList[0] = socket.id;
 
-				app.io.emit('server_message', room_info);    // <<<<<<<<<<<<<<<< emit
+				app.io.emit('info', room_info);    // <<<<<<<<<<<<<<<< emit
 
 				player_one.info();
 
@@ -162,7 +162,7 @@ app.io.on('connection', (socket) => {
 					player_two.socketId = socket.id;
 					room_info.socketList[1] = socket.id;
 
-					app.io.emit('server_message', room_info);    // <<<<<<<<<<<<<<<< emit
+					app.io.emit('info', room_info);    // <<<<<<<<<<<<<<<< emit
 					
 					player_two.info();
 
@@ -199,7 +199,7 @@ app.io.on('connection', (socket) => {
 
 				info_msg.mode = 'info';
 				info_msg.msg = "player1 남은 카드: " + player_one.count;
-				app.io.emit('server_message', info_msg);    // <<<<<<<<<<<<<<<< emit
+				app.io.emit('info', info_msg);    // <<<<<<<<<<<<<<<< emit
 
 			} else if (player_two.socketId == socket.id) {
 				player_two.turn = false;
@@ -211,7 +211,7 @@ app.io.on('connection', (socket) => {
 
 				info_msg.mode = 'info';
 				info_msg.msg = "player2 남은 카드: " + player_two.count;
-				app.io.emit('server_message', info_msg);    // <<<<<<<<<<<<<<<< emit
+				app.io.emit('info', info_msg);    // <<<<<<<<<<<<<<<< emit
 			}
 			
 			if (idx == 0) {// 첫 카드. 
@@ -255,10 +255,10 @@ app.io.on('connection', (socket) => {
 
 			}
 
-			info_msg.mode = "after";
+			info_msg.mode = "card_open_after";
 			info_msg.msg = [player_one, player_two];
 
-			app.io.to(two_room).emit('server_message', info_msg);    // <<<<<<<<<<<<<<<< emit
+			app.io.to(two_room).emit('card_open_after', info_msg);    // <<<<<<<<<<<<<<<< emit
 
 		}else {
 			console.log("엔딩처리 ㄱㄱㄱㄱㄱㄱ", player_one.count, player_two.count);
@@ -299,7 +299,7 @@ app.io.on('connection', (socket) => {
 				info_msg.mode = "start";
 				info_msg.msg = [player_one, player_two];
 
-				app.io.to(two_room).emit('server_message', info_msg);    // <<<<<<<<<<<<<<<< emit
+				app.io.to(two_room).emit('start', info_msg);    // <<<<<<<<<<<<<<<< emit
 				
 				break;
 
@@ -324,10 +324,10 @@ app.io.on('connection', (socket) => {
 
 						app.io.emit('server_message', info_msg);    // <<<<<<<<<<<<<<<< emit
 
-						info_msg.mode = "after";
+						info_msg.mode = "card_open_after";
 						info_msg.msg = [player_one, player_two];
 
-						app.io.to(two_room).emit('server_message', info_msg);    // <<<<<<<<<<<<<<<< emit
+						app.io.to(two_room).emit('card_open_after', info_msg);    // <<<<<<<<<<<<<<<< emit
 
 					} else if (player_two.socketId === socket.id) {
 
@@ -344,17 +344,17 @@ app.io.on('connection', (socket) => {
 
 						app.io.emit('server_message', info_msg);    // <<<<<<<<<<<<<<<< emit
 
-						info_msg.mode = "after";
+						info_msg.mode = "card_open_after";
 						info_msg.msg = [player_one, player_two];
 
-						app.io.to(two_room).emit('server_message', info_msg);    // <<<<<<<<<<<<<<<< emit
+						app.io.to(two_room).emit('card_open_after', info_msg);    // <<<<<<<<<<<<<<<< emit
 
 					}
 					info_msg.mode = 'bell';
 					// info_msg.msg = "벨 결과: (1p)" + player_one.count + " : (2p)" + player_two.count;
 					info_msg.msg = [player_one, player_two];
 
-					app.io.to(two_room).emit('server_message', info_msg);    // <<<<<<<<<<<<<<<< emit
+					app.io.to(two_room).emit('bell', info_msg);    // <<<<<<<<<<<<<<<< emit
 
 				} else if (player_one.count == 0) {
 					console.log("플레이어1 0 됐음");
