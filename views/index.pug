@@ -51,7 +51,6 @@ script.
   var socket = io(); 
 
     socket.on('hihi', (list) => { // 접속한 소켓 확인용
-<<<<<<< Updated upstream
     var socket_list = '';
     var currentNumberUsers = Object.keys(list).length; //접속자 수 체크
     console.log("SocketList: " + JSON.stringify(list));
@@ -60,14 +59,6 @@ script.
       console.log("socket id="+socket);
       console.log('userName:'+ name); //유저 닉네임
 
-=======
-      var socket_list = '';
-      console.log("SocketList: " + JSON.stringify(list));
-     
-      for(var socket in list){
-        socket_list += '<li id='+socket+'>소켓ID: '+socket+'</li>';
-        console.log( socket_list);
->>>>>>> Stashed changes
       }
        
       $('#checkNumberUsers').html("인원 수 : "+currentNumberUsers+"/2");
@@ -75,7 +66,7 @@ script.
       if(currentNumberUsers === 2){  //인원수가 2명일때 GAME START 버튼활성화
         btn_on();
       }
-
+g
 
      
   })
