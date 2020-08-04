@@ -39,12 +39,17 @@ block content
 		var turn = true;
 		var is_match;
 		var nickName = document.getElementById('nickname')		// 내이름
-		var cardCnt =0;
+		var myCardCnt =0;
+		var userCardCnt =0;
 		var userCard = document.getElementById('userCard');
 		var myCard =  document.getElementById('myCard');
 		var createCardImg = document.createElement('createCardImg');
 		var createCardImg2 = document.createElement('createCardImg2');
 		var myOpenCard = document.getElementById('myOpenCard');
+		var userOepnCard = document.getElementById('userOpenCard');
+
+		var userInfo = {};
+		var myInfo = {}
 
 		
 		// 카드 이름 매칭
@@ -138,19 +143,31 @@ block content
 
 			if(ask == socket.id){
 			
-				cardCnt++;
+				myCardCnt++;
 				 $("#myOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
 				 $("#myCardImg2").remove()
 				
-				if(cardCnt>=2){
+				if(myCardCnt>=2){
 					var myCloseCardImg = document.createElement('img')
 					myOpenCard.appendChild(myCloseCardImg)
 					myCloseCardImg.id = 'myCloseCardImg'
 				}
 				
 			}else{
-				 $("#userOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
+		
+				userCardCnt++;
+				$("#userOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
 				$("#userCardImg1").remove()
+
+				if(userCardCnt>=2){
+					var userCloseCardImg = document.createElement('img')
+					userOepnCard.appendChild(userCloseCardImg)
+					userCloseCardImg.id = 'userCloseCardImg'
+				}
+
+
+				
+
 			}
 
 			
