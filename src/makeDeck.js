@@ -18,7 +18,6 @@ const makeCardDeck = () => {
       }
     }
   }
-  // console.log("=== CARD LIST(" + card_list.length + "개): ", card_list);
 
   // 카드 섞기
   Array.prototype.shuffle = function () {
@@ -33,7 +32,6 @@ const makeCardDeck = () => {
   };
 
   let shuffled_card_list = card_list.shuffle();
-  // console.log("=== SHUFFLED CARD LIST: ", shuffled_card_list);
   return shuffled_card_list;
 };
 

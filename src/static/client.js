@@ -2,7 +2,8 @@ const socket = io();
 let turn = true;
 let is_match = "";
 let count = "";
-let nickName = document.getElementById("nickname"); // 내이름
+let nickName = document.querySelector(".nickName"); // 내이름
+let opponentName = document.querySelector(".opponentName"); //상대방이름
 
 // // 카드 이름 매칭
 // function makeName(card) {
@@ -30,53 +31,61 @@ let nickName = document.getElementById("nickname"); // 내이름
 //   nickName.innerHTML = name;
 // })();
 
-// // 서버로부터 전달받은 정보 메세지를 종류별로 처리
-// socket.on("server_message", (msg) => {
-//   var msg_mode = msg.mode;
+// 서버로부터 전달받은 정보 메세지를 종류별로 처리
+socket.on("readyComplete", (roomInfo) => {
+  console.log(roomInfo);
+});
 
-//   switch (msg_mode) {
-//     case "start":
-//       console.log("유저정보: ", msg);
+socket.on("userInit", (userList) => {
+  console.log(userList);
+});
 
-//       break;
+socket.on("server_message", (msg) => {
+  var msg_mode = msg.mode;
 
-//     case "info":
-//       console.log(msg);
+  switch (msg_mode) {
+    case "start":
+      console.log("유저정보: ", msg);
 
-//       break;
+      break;
 
-//     case "bell":
-//       console.log("bell: ", msg);
+    case "info":
+      console.log(msg);
 
-//       $("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
-//       $("#userOpenCardImg")[0].src = "";
+      break;
 
-//       // 턴 처리
+    case "bell":
+      console.log("bell: ", msg);
 
-//       break;
+      $("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
+      $("#userOpenCardImg")[0].src = "";
 
-//     case "card_open_after":
-//       console.log("card_open_after: ", msg);
+      // 턴 처리
 
-//       // 턴 처리
-//       if (msg.msg[0].turn) {
-//         console.log("1P의 턴");
-//         msg.msg[1].socketId == socket.id
-//           ? ($("#cardOpenBtn")[0].disabled = true)
-//           : ($("#cardOpenBtn")[0].disabled = false);
-//       } else {
-//         console.log("2P의 턴");
-//         msg.msg[0].socketId == socket.id
-//           ? ($("#cardOpenBtn")[0].disabled = true)
-//           : ($("#cardOpenBtn")[0].disabled = false);
-//       }
+      break;
 
-//       break;
+    case "card_open_after":
+      console.log("card_open_after: ", msg);
 
-//     default:
-//       console.log(msg);
-//   }
-// });
+      // 턴 처리
+      if (msg.msg[0].turn) {
+        console.log("1P의 턴");
+        msg.msg[1].socketId == socket.id
+          ? ($("#cardOpenBtn")[0].disabled = true)
+          : ($("#cardOpenBtn")[0].disabled = false);
+      } else {
+        console.log("2P의 턴");
+        msg.msg[0].socketId == socket.id
+          ? ($("#cardOpenBtn")[0].disabled = true)
+          : ($("#cardOpenBtn")[0].disabled = false);
+      }
+
+      break;
+
+    default:
+      console.log(msg);
+  }
+});
 
 // // 카드 배분. 받은걸로 액션 처리.
 // socket.on("gift_card", (card, idx, match, ask) => {
@@ -140,19 +149,18 @@ let nickName = document.getElementById("nickname"); // 내이름
 //   $("#tmp1")[0].disabled = false;
 // });
 
-$("#tmp1").click(() => {
+$(".ready").click(() => {
   // 레디 (방에 입장) 2P도 레디 해야 카드 오픈 누를 수 있게 해야함
 
-  $("#tmp1")[0].disabled = true;
+  $(".ready")[0].disabled = true;
   $("#cardOpenBtn")[0].disabled = false;
 
-  console.log("click go");
   const msg = {
     mode: "user_init",
     userName: name,
   };
 
-  socket.emit("go");
+  socket.emit("ready", nickName.innerHTML);
   socket.emit("client_message", msg);
 });
 

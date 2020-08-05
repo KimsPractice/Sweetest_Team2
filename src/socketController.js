@@ -1,54 +1,75 @@
 import makeCardDeck from "./makeDeck";
 import player from "./player";
 
-let room = ""; // 2인용 방
-let idx = 0;
 const room_info = {
   name: "",
   userList: [],
-};
-
-const info_msg = {
-  mode: "info",
-  msg: "",
+  full: false,
 };
 
 const socketController = (socket, io) => {
-  // socket_list.push(socket.id);
-
   let { name: roomName, userList } = room_info;
   let shuffledDeck = makeCardDeck();
 
   const enterRoom = (roomName, newPlayer) => {
     socket.join(roomName, () => {
       const { userList } = room_info;
-      userList.push(newPlayer);
-      io.to(roomName).emit("server_message", info_msg);
-      io.emit("server_message", room_info);
+
+      if (newPlayer) {
+        userList.push(newPlayer);
+      }
+
+      io.to(roomName).emit("userInit", userList);
 
       newPlayer.info();
-
-      console.log(info_msg);
-      console.log("room_info: ", room_info);
     });
   };
 
-  socket.on("go", () => {
-    if (room == "") {
-      room = socket.id;
+  const player1Cards = shuffledDeck.slice(0, shuffledDeck.length / 2);
+  const player2Cards = shuffledDeck.slice(
+    shuffledDeck.length / 2,
+    shuffledDeck.length
+  );
+
+  socket.on("ready", (nickName) => {
+    if (roomName == "") {
       // 방이름을 방장의 소켓 아이디로 지정
-      roomName = room;
+      roomName = socket.id;
       room_info.name = roomName;
-      const newPlayer = new player("1P", null, true, socket.id, 28);
+
+      const newPlayer = new player(
+        "1P",
+        nickName || "anonymous",
+        true,
+        socket.id,
+        true,
+        []
+      );
+
       enterRoom(roomName, newPlayer);
-    } else if (room != socket.id) {
+    } else if (roomName != socket.id) {
       // 입장을 두 명으로 제한
       if (userList.length < 2) {
-        const newPlayer2 = new player("2P", null, false, socket.id, 28);
+        const newPlayer2 = new player(
+          "2P",
+          nickName || "anonymous",
+          false,
+          socket.id,
+          true,
+          []
+        );
+
         enterRoom(roomName, newPlayer2);
       } else {
         console.log("게임방에 빈자리가 없습니다.");
       }
+    }
+
+    if ((userList.length = 2)) {
+      room_info.full = true;
+      const { userList } = room_info;
+
+      io.to(userList[0].socketId).emit("readyComplete", room_info);
     }
   });
 
@@ -148,80 +169,80 @@ const socketController = (socket, io) => {
   // });
 
   // 클라이언트로부터 전달받은 메시지를 종류별로 처리
-  socket.on("client_message", (msg) => {
-    const player1 = userList[0];
-    const player2 = userList[1];
+  // socket.on("client_message", (msg) => {
+  //   const player1 = userList[0];
+  //   const player2 = userList[1];
 
-    console.log("=== client_message: ", msg);
+  //   console.log("=== client_message: ", msg);
 
-    const { mode } = msg;
+  //   const { mode } = msg;
 
-    switch (mode) {
-      // 플레이어에게 닉네임 셋팅
-      case "user_init":
-        console.log("★★★ user_init: ", socket.id);
+  //   switch (mode) {
+  //     // 플레이어에게 닉네임 셋팅
+  //     case "user_init":
+  //       console.log("★★★ user_init: ", socket.id);
 
-        if (player1.socketId == socket.id) {
-          player1.name = msg.userName;
-        } else if (player2.socketId == socket.id) {
-          player2.name = msg.userName;
-        }
+  //       if (player1.socketId == socket.id) {
+  //         player1.name = msg.userName;
+  //       } else if (player2.socketId == socket.id) {
+  //         player2.name = msg.userName;
+  //       }
 
-        console.log("1p:", player1);
-        console.log("2p:", player2);
+  //       console.log("1p:", player1);
+  //       console.log("2p:", player2);
 
-        break;
+  //       break;
 
-      //     // 벨 친 사람 정보로 카운트와 턴 처리
-      //     case "bell":
-      //       console.log("★★★ bell: ", socket.id);
+  //     // 벨 친 사람 정보로 카운트와 턴 처리
+  //     case "bell":
+  //       console.log("★★★ bell: ", socket.id);
 
-      //       if (player1.life > 0 && player2.life > 0) {
-      //         if (player1.socketId == socket.id) {
-      //           if (!msg.match) player1.life--;
-      //           player1.turn = false;
-      //           player2.turn = true;
+  //       if (player1.life > 0 && player2.life > 0) {
+  //         if (player1.socketId == socket.id) {
+  //           if (!msg.match) player1.life--;
+  //           player1.turn = false;
+  //           player2.turn = true;
 
-      //           info_msg.mode = "info";
-      //           info_msg.msg = "player1 남은 카드: " + player1.life;
+  //           info_msg.mode = "info";
+  //           info_msg.msg = "player1 남은 카드: " + player1.life;
 
-      //           app.io.emit("server_message", info_msg); // <<<<<<<<<<<<<<<< emit
-      //         } else if (player2.socketId === socket.id) {
-      //           if (!msg.match) player2.life--;
-      //           player2.turn = false;
-      //           player1.turn = true;
+  //           app.io.emit("server_message", info_msg); // <<<<<<<<<<<<<<<< emit
+  //         } else if (player2.socketId === socket.id) {
+  //           if (!msg.match) player2.life--;
+  //           player2.turn = false;
+  //           player1.turn = true;
 
-      //           info_msg.mode = "info";
-      //           info_msg.msg = "player2 남은 카드: " + player2.life;
+  //           info_msg.mode = "info";
+  //           info_msg.msg = "player2 남은 카드: " + player2.life;
 
-      //           app.io.emit("server_message", info_msg); // <<<<<<<<<<<<<<<< emit
-      //         }
-      //         info_msg.mode = "bell";
-      //         // info_msg.msg = "벨 결과: (1p)" + player1.life + " : (2p)" + player2.life;
-      //         info_msg.msg = [player1, player2];
+  //           app.io.emit("server_message", info_msg); // <<<<<<<<<<<<<<<< emit
+  //         }
+  //         info_msg.mode = "bell";
+  //         // info_msg.msg = "벨 결과: (1p)" + player1.life + " : (2p)" + player2.life;
+  //         info_msg.msg = [player1, player2];
 
-      //         app.io.to(two_room).emit("server_message", info_msg); // <<<<<<<<<<<<<<<< emit
-      //       } else if (player1.life == 0) {
-      //         console.log("플레이어1 0 됐음");
+  //         app.io.to(two_room).emit("server_message", info_msg); // <<<<<<<<<<<<<<<< emit
+  //       } else if (player1.life == 0) {
+  //         console.log("플레이어1 0 됐음");
 
-      //         app.io.to(player1.socketId).emit("lose");
-      //         app.io.to(player2.socketId).emit("win");
-      //       } else if (player2.life == 0) {
-      //         console.log("플레이어2 0 됐음");
+  //         app.io.to(player1.socketId).emit("lose");
+  //         app.io.to(player2.socketId).emit("win");
+  //       } else if (player2.life == 0) {
+  //         console.log("플레이어2 0 됐음");
 
-      //         app.io.to(player1.socketId).emit("win");
-      //         app.io.to(player2.socketId).emit("lose");
-      //       }
+  //         app.io.to(player1.socketId).emit("win");
+  //         app.io.to(player2.socketId).emit("lose");
+  //       }
 
-      //       break;
+  //       break;
 
-      //     case "msg":
-      //       break;
+  //     case "msg":
+  //       break;
 
-      //     case "abc":
-      //       break;
-    }
-  });
+  //     case "abc":
+  //       break;
+  //   }
+  // });
 
   // // .on() 엔딩.
   // /* 승패 판별 방법.

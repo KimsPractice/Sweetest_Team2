@@ -1,6 +1,7 @@
 extends layout
 block content
 	div#wrap
+		.opponentName
 		div#main
 			div#userCard
 				Img(id='userCardImg')
@@ -19,11 +20,12 @@ block content
 			div#myCard
 				Img(id='myCardImg')
 				button(id="cardOpenBtn") 카드 오픈
-		span(id="nickname")
+			
+		.nickName #{userNickname || "anonymous"}
 				
 			
 		div#tmpDiv(style="position:absolute;top:500px;")
-			button(id="tmp1") 레디
+			button.ready 레디
 			button(id="tmp2") 카드 초기화
 		
 
