@@ -48,8 +48,26 @@ block content
 		var myOpenCard = document.getElementById('myOpenCard');
 		var userOepnCard = document.getElementById('userOpenCard');
 
-		var userInfo = {};
-		var myInfo = {}
+		var cardDeck = [
+			'apple1','apple1','apple1','apple1','apple1',
+			'apple2','apple2','apple2','apple3','apple3',
+			'apple3','apple4','apple4','apple5',
+			'banana1','banana1','banana1','banana1','banana1',
+			'banana2','banana2','banana2','banana3',
+			'banana3','banana3','banana4','banana4','banana5',
+			'peach1','peach1','peach1','peach1','peach1',
+			'peach2','peach2','peach2','peach3','peach3',
+			'peach3','peach4','peach4','peach5','strawberry1',
+			'strawberry1','strawberry1','strawberry1','strawberry1',
+			'strawberry2','strawberry2','strawberry2','strawberry3',
+			'strawberry3','strawberry3','strawberry4','strawberry4',
+			'strawberry5'	
+		]
+
+
+	
+
+		
 
 		
 		// 카드 이름 매칭
@@ -72,6 +90,28 @@ block content
 			}
 			return card_name;
 		}
+
+	
+
+			//카드섞기
+			Array.prototype.shuffle = function (){
+			let length = this.length;
+			while (length) {
+					let index = Math.floor(length-- * Math.random());
+					let temp = this[length];
+				this[length] = this[index];
+				this[index] = temp;
+				}
+				return this;
+			};
+
+				var deckShuffle = cardDeck.shuffle();
+					var myCardDeck = deckShuffle.slice(0, 28); //내 카드 덱
+					var userCardDeck = deckShuffle.slice(28, 56);//상대 카드 덱
+					var openCardDeck = []; // 각자 냈던 카드 덱
+					
+					console.log('myCard', myCardDeck); 	
+					console.log('userCard', userCardDeck);			
 
 		//var image = new Image();
 		//image.src = 'file:///C:/Users/grutech/Desktop/Sweetest_Team2/Image/apple.png'
@@ -103,7 +143,10 @@ block content
 
 		.on('info', (msg) => {
 			console.log("info",msg.msg);
+	
+			
 		})
+		
 
 		.on('bell', (msg) => {
 			console.log("bell: ", msg);
@@ -139,14 +182,20 @@ block content
 			is_match = match; // $('#big_bell').click 에서 사용
 
 			console.log('(idx:'+idx+')', card_name, ' / match: ', match);
+		
+
 
 
 			if(ask == socket.id){
 			
 				myCardCnt++;
+
 				 $("#myOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
 				 $("#myCardImg2").remove()
-				
+
+				openCardDeck.push(card_name);
+				console.log("openCardDeck : ",openCardDeck);	
+
 				if(myCardCnt>=2){
 					var myCloseCardImg = document.createElement('img')
 					myOpenCard.appendChild(myCloseCardImg)
@@ -158,6 +207,9 @@ block content
 				userCardCnt++;
 				$("#userOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
 				$("#userCardImg1").remove()
+
+				openCardDeck.push(card_name);
+				console.log("openCardDeck : ",openCardDeck);
 
 				if(userCardCnt>=2){
 					var userCloseCardImg = document.createElement('img')
