@@ -161,7 +161,6 @@ $(".ready").click(() => {
   };
 
   socket.emit("ready", nickName.innerHTML);
-  socket.emit("client_message", msg);
 });
 
 // $("#tmp2").click(() => {

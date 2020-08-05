@@ -8,21 +8,14 @@ const room_info = {
 };
 
 const socketController = (socket, io) => {
+  console.log([socket.id]);
   let { name: roomName, userList } = room_info;
   let shuffledDeck = makeCardDeck();
 
   const enterRoom = (roomName, newPlayer) => {
-    socket.join(roomName, () => {
-      const { userList } = room_info;
-
-      if (newPlayer) {
-        userList.push(newPlayer);
-      }
-
-      io.to(roomName).emit("userInit", userList);
-
-      newPlayer.info();
-    });
+    userList.push(newPlayer);
+    socket.join(roomName);
+    newPlayer.info();
   };
 
   const player1Cards = shuffledDeck.slice(0, shuffledDeck.length / 2);
@@ -32,7 +25,7 @@ const socketController = (socket, io) => {
   );
 
   socket.on("ready", (nickName) => {
-    if (roomName == "") {
+    if (userList.length == 0) {
       // 방이름을 방장의 소켓 아이디로 지정
       roomName = socket.id;
       room_info.name = roomName;
@@ -47,7 +40,7 @@ const socketController = (socket, io) => {
       );
 
       enterRoom(roomName, newPlayer);
-    } else if (roomName != socket.id) {
+    } else if (roomName !== socket.id) {
       // 입장을 두 명으로 제한
       if (userList.length < 2) {
         const newPlayer2 = new player(
@@ -58,17 +51,15 @@ const socketController = (socket, io) => {
           true,
           []
         );
-
         enterRoom(roomName, newPlayer2);
       } else {
         console.log("게임방에 빈자리가 없습니다.");
       }
     }
 
-    if ((userList.length = 2)) {
+    if (userList.length === 2) {
+      console.log(userList);
       room_info.full = true;
-      const { userList } = room_info;
-
       io.to(userList[0].socketId).emit("readyComplete", room_info);
     }
   });
