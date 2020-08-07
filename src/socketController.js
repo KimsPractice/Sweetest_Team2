@@ -8,21 +8,49 @@ const room_info = {
 };
 
 const socketController = (socket, io) => {
-  console.log([socket.id]);
   let { name: roomName, userList } = room_info;
   let shuffledDeck = makeCardDeck();
+  let usedCards = [];
 
   const enterRoom = (roomName, newPlayer) => {
     userList.push(newPlayer);
     socket.join(roomName);
+    io.emit("userInit", userList);
     newPlayer.info();
   };
 
-  const player1Cards = shuffledDeck.slice(0, shuffledDeck.length / 2);
-  const player2Cards = shuffledDeck.slice(
-    shuffledDeck.length / 2,
-    shuffledDeck.length
-  );
+  socket.on("cardOpen", (openUserId) => {
+    let firstCard = "";
+
+    userList.map((users) => {
+      if (users.socketId == openUserId) {
+        if (users.cards.length != 0) {
+          users.turn = false;
+          firstCard = users.cards[0];
+          usedCards.push(firstCard);
+          users.cards = users.cards.slice(1, users.cards.length);
+        } else {
+          io.emit("gameSet", { userList, loseuserId: users.socketId });
+        }
+      } else {
+        users.turn = true;
+      }
+    });
+    io.emit("drawCard", { firstCard, userList });
+  });
+
+  socket.on("gameStart", () => {
+    const player1Cards = shuffledDeck.slice(0, shuffledDeck.length / 2);
+    const player2Cards = shuffledDeck.slice(
+      shuffledDeck.length / 2,
+      shuffledDeck.length
+    );
+
+    userList[0].cards = player1Cards;
+    userList[1].cards = player2Cards;
+
+    io.emit("gameSetup", userList);
+  });
 
   socket.on("ready", (nickName) => {
     if (userList.length == 0) {
@@ -58,7 +86,6 @@ const socketController = (socket, io) => {
     }
 
     if (userList.length === 2) {
-      console.log(userList);
       room_info.full = true;
       io.to(userList[0].socketId).emit("readyComplete", room_info);
     }

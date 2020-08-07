@@ -7,26 +7,26 @@ block content
 				Img(id='userCardImg')
 
 			div#userOpenCard
-				Img(id='userOpenCardImg' src="")
-				Img(id="userCloseCardImg")
+				Img.userOpenCardImg
 				
-			div#bell
-				button(id="big_bell")  
+			div
+				button.bell(id="big_bell" disabled=true)  
 
 			div#myOpenCard
-				Img(id='myOpenCardImg' src="")
-				Img(id="myCloseCardImg")
+				Img.myOpenCardImg
 				
 			div#myCard
 				Img(id='myCardImg')
-				button(id="cardOpenBtn") 카드 오픈
+				button.cardOpenBtn(id="cardOpenBtn" disabled=true) 카드 오픈
 			
 		.nickName #{userNickname || "anonymous"}
 				
 			
-		div#tmpDiv(style="position:absolute;top:500px;")
-			button.ready 레디
+		div#tmpDiv
+			button.ready 레디  
 			button(id="tmp2") 카드 초기화
+
+		button.gameStart 게임시작
 		
 
 

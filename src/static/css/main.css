@@ -1,5 +1,9 @@
 @import "./layout.css";
 
+.gameStart {
+  display: none;
+}
+
 #wrap {
   line-height: 50%;
   text-align: center;

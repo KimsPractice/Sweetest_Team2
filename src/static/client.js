@@ -1,90 +1,82 @@
 const socket = io();
-let turn = true;
-let is_match = "";
-let count = "";
-let nickName = document.querySelector(".nickName"); // 내이름
-let opponentName = document.querySelector(".opponentName"); //상대방이름
+const nickName = document.querySelector(".nickName"); // 내이름
+const opponentName = document.querySelector(".opponentName"); //상대방이름
+const readyBtn = document.querySelector(".ready");
+const startBtn = document.querySelector(".gameStart");
+const bell = document.querySelector(".bell");
+const cardOpenBtn = document.querySelector(".cardOpenBtn");
+const myOpenCardImg = document.querySelector(".myOpenCardImg");
+const userOpenCardImg = document.querySelector(".userOpenCardImg");
 
-// // 카드 이름 매칭
-// function makeName(card) {
-//   let card_name = "";
-//   let name = card.substring(0, 1);
-//   switch (name) {
-//     case "A":
-//       card_name = "apple";
-//       break;
-//     case "B":
-//       card_name = "banana";
-//       break;
-//     case "C":
-//       card_name = "peach";
-//       break;
-//     case "D":
-//       card_name = "strawberry";
-//       break;
-//   }
-//   return card_name;
-// }
+const imageName = (firstCard) => {
+  let cardName = "";
+  let forderName = "";
+  let name = firstCard.substring(0, 1);
+  const number = firstCard.substring(1, 2);
 
-// (function () {
-//   $("#cardOpenBtn")[0].disabled = true;
-//   nickName.innerHTML = name;
-// })();
+  switch (name) {
+    case "A":
+      forderName = `apple`;
+      cardName = `apple${number}`;
+      break;
+    case "B":
+      forderName = `banana`;
+      cardName = `banana${number}`;
+      break;
+    case "C":
+      forderName = `peach`;
+      cardName = `peach${number}`;
+      break;
+    case "D":
+      forderName = `strawberry`;
+      cardName = `strawberry${number}`;
+      break;
+  }
+  return `css/${forderName}/${cardName}.png`;
+};
 
-// 서버로부터 전달받은 정보 메세지를 종류별로 처리
+const turnChange = (userList, imagePath = "", cardDumy = "") => {
+  userList.map((users) => {
+    if (users.turn) {
+      if (users.socketId == socket.id) {
+        userOpenCardImg.src = imagePath || "";
+        cardOpenBtn.disabled = false;
+      } else {
+        myOpenCardImg.src = imagePath || "";
+        cardOpenBtn.disabled = true;
+      }
+    }
+  });
+};
+
+socket.on("drawCard", ({ firstCard, userList }) => {
+  const imagePath = imageName(firstCard);
+  turnChange(userList, imagePath);
+});
+
+socket.on("gameSetup", (userList) => {
+  startBtn.style.display = "none";
+  readyBtn.style.display = "none";
+  turnChange(userList);
+  bell.disabled = false;
+});
+
 socket.on("readyComplete", (roomInfo) => {
   console.log(roomInfo);
+  const { full } = roomInfo;
+
+  console.log("준비가 완료되었습니다!! 게임시작을 눌러주세요 !!");
+  if (full == true) {
+    startBtn.style.display = "block";
+  }
 });
 
 socket.on("userInit", (userList) => {
-  console.log(userList);
-});
-
-socket.on("server_message", (msg) => {
-  var msg_mode = msg.mode;
-
-  switch (msg_mode) {
-    case "start":
-      console.log("유저정보: ", msg);
-
-      break;
-
-    case "info":
-      console.log(msg);
-
-      break;
-
-    case "bell":
-      console.log("bell: ", msg);
-
-      $("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
-      $("#userOpenCardImg")[0].src = "";
-
-      // 턴 처리
-
-      break;
-
-    case "card_open_after":
-      console.log("card_open_after: ", msg);
-
-      // 턴 처리
-      if (msg.msg[0].turn) {
-        console.log("1P의 턴");
-        msg.msg[1].socketId == socket.id
-          ? ($("#cardOpenBtn")[0].disabled = true)
-          : ($("#cardOpenBtn")[0].disabled = false);
-      } else {
-        console.log("2P의 턴");
-        msg.msg[0].socketId == socket.id
-          ? ($("#cardOpenBtn")[0].disabled = true)
-          : ($("#cardOpenBtn")[0].disabled = false);
-      }
-
-      break;
-
-    default:
-      console.log(msg);
-  }
+  userList.map((users) => {
+    if (users.socketId != socket.id || users.length < 3) {
+      opponentName.innerHTML = users.name;
+    }
+  });
 });
 
 // // 카드 배분. 받은걸로 액션 처리.
@@ -151,15 +143,7 @@ socket.on("server_message", (msg) => {
 
 $(".ready").click(() => {
   // 레디 (방에 입장) 2P도 레디 해야 카드 오픈 누를 수 있게 해야함
-
   $(".ready")[0].disabled = true;
-  $("#cardOpenBtn")[0].disabled = false;
-
-  const msg = {
-    mode: "user_init",
-    userName: name,
-  };
-
   socket.emit("ready", nickName.innerHTML);
 });
 
@@ -167,3 +151,18 @@ $(".ready").click(() => {
 //   console.log("게임을 초기화합니다.");
 //   socket.emit("reset");
 // });
+
+const handlecardOpenBtn = () => {
+  socket.emit("cardOpen", socket.id);
+};
+
+const handleStartBtn = () => {
+  socket.emit("gameStart");
+};
+
+const init = () => {
+  startBtn.addEventListener("click", handleStartBtn);
+  cardOpenBtn.addEventListener("click", handlecardOpenBtn);
+};
+
+init();
