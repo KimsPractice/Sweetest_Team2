@@ -15,61 +15,38 @@ block content
 				Img(id='myOpenCardImg')
 				
 				
-				
 			div#myCard
 				Img(id='myCardImg')
 
 			button(id="cardOpenBtn") 카드 오픈
 	
 				
-		span(id="nickname")
+		span#nickname
+
+		span#otherName(style="position:absolute;top:100px;")
 
 		div#tmpDiv(style="position:absolute;top:500px;")
 			button(id="tmp1") 레디
 			br
 			br
 			button(id="tmp2") 카드 초기화
-
-
+		
+		div#tmpReadyMessage(style="display:none;position:absolute;top:300px;left:180px;") 상대방을 기다리는 중...
 			
 	script(src='https://cdn.socket.io/socket.io-1.4.5.js')
 	script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js')
 	script.
 		var socket = io();
-		var turn = true;
 		var is_match;
 		var nickName = document.getElementById('nickname')		// 내이름
-		var myCardCnt =0;
-		var userCardCnt =0;
+		var cardCnt =0;
 		var userCard = document.getElementById('userCard');
 		var myCard =  document.getElementById('myCard');
 		var createCardImg = document.createElement('createCardImg');
 		var createCardImg2 = document.createElement('createCardImg2');
 		var myOpenCard = document.getElementById('myOpenCard');
-		var userOepnCard = document.getElementById('userOpenCard');
-
-		var cardDeck = [
-			'apple1','apple1','apple1','apple1','apple1',
-			'apple2','apple2','apple2','apple3','apple3',
-			'apple3','apple4','apple4','apple5',
-			'banana1','banana1','banana1','banana1','banana1',
-			'banana2','banana2','banana2','banana3',
-			'banana3','banana3','banana4','banana4','banana5',
-			'peach1','peach1','peach1','peach1','peach1',
-			'peach2','peach2','peach2','peach3','peach3',
-			'peach3','peach4','peach4','peach5','strawberry1',
-			'strawberry1','strawberry1','strawberry1','strawberry1',
-			'strawberry2','strawberry2','strawberry2','strawberry3',
-			'strawberry3','strawberry3','strawberry4','strawberry4',
-			'strawberry5'	
-		]
-
-
-	
-
 		
 
-		
 		// 카드 이름 매칭
 		function makeName(card) {
 			let card_name = "";
@@ -90,28 +67,6 @@ block content
 			}
 			return card_name;
 		}
-
-	
-
-			//카드섞기
-			Array.prototype.shuffle = function (){
-			let length = this.length;
-			while (length) {
-					let index = Math.floor(length-- * Math.random());
-					let temp = this[length];
-				this[length] = this[index];
-				this[index] = temp;
-				}
-				return this;
-			};
-
-				var deckShuffle = cardDeck.shuffle();
-					var myCardDeck = deckShuffle.slice(0, 28); //내 카드 덱
-					var userCardDeck = deckShuffle.slice(28, 56);//상대 카드 덱
-					var openCardDeck = []; // 각자 냈던 카드 덱
-					
-					console.log('myCard', myCardDeck); 	
-					console.log('userCard', userCardDeck);			
 
 		//var image = new Image();
 		//image.src = 'file:///C:/Users/grutech/Desktop/Sweetest_Team2/Image/apple.png'
@@ -137,43 +92,32 @@ block content
 			$('#param1').html(socket_list);
 		})
 
-		.on('start', (msg) => {
-			console.log("유저정보: ", msg)
-		})
-
 		.on('info', (msg) => {
-			console.log("info",msg.msg);
-	
-			
-		})
-		
+			console.log(msg);
 
-		.on('bell', (msg) => {
-			console.log("bell: ", msg);
 
-			$("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
-			$("#userOpenCardImg")[0].src = "";
 		})
 
-		// 카드 오픈 후의 처리
-		.on('card_open_after', (msg) => {
-			console.log("card_open_after: ", msg);
+		.on('ready', (msg) => {
+			console.log(msg);
 
-			// 턴 처리
-			if(msg.msg[0].turn){
-				console.log("1P의 턴");
-				(msg.msg[1].socketId == socket.id) ? $("#cardOpenBtn")[0].disabled = true : $("#cardOpenBtn")[0].disabled = false;
-			
-			
+			// 상대방의 닉네임 배치
+			msg[0].socketId == socket.id ? $("#otherName").text(msg[1].name) : $("#otherName").text(msg[0].name);
+
+			// 2P 입장 전후처리
+			if (msg[1].socketId == null) {
+				$("#tmpReadyMessage").css("display", "block");
 			} else {
-				console.log("2P의 턴");
-				(msg.msg[0].socketId == socket.id) ? $("#cardOpenBtn")[0].disabled = true : $("#cardOpenBtn")[0].disabled = false;
+				$("#tmpReadyMessage").css("display", "none");
+				if (msg[0].socketId == socket.id) {
+					$("#cardOpenBtn")[0].disabled = false;
+				}
 			}
+			
 
 		})
 
-
-		// 카드 받아서 처리
+		// 카드 배분. 받은걸로 액션 처리.
 		.on('gift_card', (card, idx, match, ask) => {
 
 			var folder_name = makeName(card);
@@ -182,50 +126,51 @@ block content
 			is_match = match; // $('#big_bell').click 에서 사용
 
 			console.log('(idx:'+idx+')', card_name, ' / match: ', match);
-		
-
-
 
 			if(ask == socket.id){
 			
-				myCardCnt++;
-
+				cardCnt++;
 				 $("#myOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
 				 $("#myCardImg2").remove()
-
-				openCardDeck.push(card_name);
-				console.log("openCardDeck : ",openCardDeck);	
-
-				if(myCardCnt>=2){
+				
+				if(cardCnt>=2){
 					var myCloseCardImg = document.createElement('img')
 					myOpenCard.appendChild(myCloseCardImg)
 					myCloseCardImg.id = 'myCloseCardImg'
 				}
 				
 			}else{
-		
-				userCardCnt++;
-				$("#userOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
+				 $("#userOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
 				$("#userCardImg1").remove()
-
-				openCardDeck.push(card_name);
-				console.log("openCardDeck : ",openCardDeck);
-
-				if(userCardCnt>=2){
-					var userCloseCardImg = document.createElement('img')
-					userOepnCard.appendChild(userCloseCardImg)
-					userCloseCardImg.id = 'userCloseCardImg'
-				}
-
-
-				
-
 			}
 
+			// 카드를 요청한 소켓이 본인이면 본인자리에, 상대방이면 상대방 자리에 카드 배치
+		/*	(ask == socket.id) ? $("#myOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
+			 $("#myCardImg2").remove()
+			 : $("#userOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
+			 $("#userCardImg1").remove() */
+
+		})
+
+		.on('card_open_after', (msg) => {
+			console.log("card_open_after: ", msg);
+
+			// 턴 처리
+			if(msg[0].turn){
+				console.log("1P의 턴");
+				(msg[1].socketId == socket.id) ? $("#cardOpenBtn")[0].disabled = true : $("#cardOpenBtn")[0].disabled = false;
 			
-			if (idx == 55){
-				console.log("카드 다 썼음. 엔딩처리하면 됨");
+			} else {
+				console.log("2P의 턴");
+				(msg[0].socketId == socket.id) ? $("#cardOpenBtn")[0].disabled = true : $("#cardOpenBtn")[0].disabled = false;
 			}
+		})
+		
+		.on('bell', (msg) => {
+			console.log("bell: ", msg);
+
+			$("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
+			$("#userOpenCardImg")[0].src = "";
 
 		})
 
@@ -241,12 +186,21 @@ block content
 
 		})
 
+		
+		.on('clean', () => {
+			$("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
+			$("#userOpenCardImg")[0].src = "";
+			$("#tmp1")[0].disabled = false;	
+		});
 
+
+
+		// 클릭 이벤트
 
 		// 카드 요청
 		$('#cardOpenBtn').click(() => { 
 
-			socket.emit('show_me_the_card');
+			socket.emit('show_me_the_card');    // <<<<<<<<<<<<<<<< emit
 
 		});
 
@@ -254,46 +208,36 @@ block content
 		// 벨
 		$('#big_bell').click(() => {
 
-			var match = null;
+			var bell_match = false;
 
 			if(is_match) {
-				// 쓴 카드 회수하는 것은 승패에 영향이 없지만 추가해야할까... 
-				// 한 번이라도 종을 친 적이 있다면 0 됐을 때 카드 뒷면 이미지 보여지게 처리하면 됨. 없으면 맨마닥.
 				
-				match = true;
+				bell_match = true;
 
-				socket.emit('bell', match);
+				socket.emit('bell', bell_match);    // <<<<<<<<<<<<<<<< emit
 
 			} else { 
 
-				match = false;
+				bell_match = false;
 
-				socket.emit('bell', match);
+				socket.emit('bell', bell_match);    // <<<<<<<<<<<<<<<< emit
 			}
 
 		});
 
-		/////////////// 테스트용
-
-		
-		socket.on('clean', () => {
-			$("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
-			$("#userOpenCardImg")[0].src = "";
-			$("#tmp1")[0].disabled = false;	
-		});
 
 
 		$('#tmp1').click(() => { // 레디 (방에 입장) 2P도 레디 해야 카드 오픈 누를 수 있게 해야함
 
 			
 			$("#tmp1")[0].disabled = true;
-			$("#cardOpenBtn")[0].disabled = false;
+			// $("#cardOpenBtn")[0].disabled = false;
 
 			console.log('click go');
-			var userName = name
+			var userName = name;
 
-			socket.emit('go'); 
-			socket.emit('user_init', userName);
+			socket.emit('go');     // <<<<<<<<<<<<<<<< emit
+			socket.emit('user_init', userName);    // <<<<<<<<<<<<<<<< emit
 			
 			
 			for(var i=0; i<28; i++){   //1p 카드 겹치는 효과
@@ -310,8 +254,6 @@ block content
 				createCardImg2.id = 'myCardImg2'
 
 			}
-
-
 	
 
 		});
@@ -319,10 +261,13 @@ block content
 		$('#tmp2').click(() => { 
 			console.log("게임을 초기화합니다.");
 
-			socket.emit('reset');
+			// $("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
+			// $("#userOpenCardImg")[0].src = "";
+			
+
+			socket.emit('reset');    // <<<<<<<<<<<<<<<< emit
 		});
 
 
 
-		
 
