@@ -104,7 +104,8 @@ var socket_list = {};
 var two_room = ''; // 2인용 방
 
 var idx = 0;
-var bell_flag = 0;
+var bell_flag = false;
+var used_card_list = [];
 
 var room_info = {
 	roomName: null,
@@ -126,7 +127,7 @@ app.io.on('connection', (socket) => {
 	socket_list[socket.id] = socket.id;
 	// app.io.emit('hihi', socket_list);
 
-	// 방에 안입장한 사람들은 관전할 수 있게 하면 되겠음
+	// 입장
 	socket.on('go', () => {
 
 		// app.io.emit('hihi', socket_list);
@@ -152,7 +153,7 @@ app.io.on('connection', (socket) => {
 
 			});
 
-		} else if (two_room != socket.id) {
+		} else if (two_room != socket.id) { // 2P 입장
 
 			// 입장을 두 명으로 제한
 			if(room_info.socketList.length < 2){
@@ -167,7 +168,7 @@ app.io.on('connection', (socket) => {
 					player_two.info();
 
 					console.log(info_msg);
-					console.log("room_info: ",room_info);
+					console.log("room_info: ", room_info);
 
 				});
 			}
@@ -185,34 +186,44 @@ app.io.on('connection', (socket) => {
 		console.log("★★★ user_init: ", socket.id);
 		console.log("socket list" ,socket_list);
 
-		if (player_one.socketId == socket.id){
+		if (player_one.socketId == socket.id) {
 			console.log("dddd");
 			player_one.name = userName;
 
-		} else if (player_two.socketId === socket.id) {
+		} else if (player_two.socketId == socket.id) {
 			player_two.name = userName;
 		}
 
 		console.log("1p:",player_one);
 		console.log("2p:",player_two);
 
-		info_msg.mode = "start";
-		info_msg.msg = [player_one, player_two];
+		var ready_msg = [player_one, player_two];
 
-		app.io.to(two_room).emit('start', info_msg);    // <<<<<<<<<<<<<<<< emit
+		app.io.to(two_room).emit('ready', ready_msg);    // <<<<<<<<<<<<<<<< emit
 
 	})
 	
 	// 카드 요청 > 전달 이벤트
 	.on('show_me_the_card', () => { 
+		
+		if (player_one.count < 0 ) { // TODO:
 
-		if(player_one.count > 0 && player_two.count > 0) {
+			app.io.to(player_one.socketId).emit('win');    // <<<<<<<<<<<<<<<< emit
+			app.io.to(player_two.socketId).emit('lose');   // <<<<<<<<<<<<<<<< emit
+
+		} else if (player_two.count < 0 ) { TODO:
+
+			app.io.to(player_one.socketId).emit('lose');    // <<<<<<<<<<<<<<<< emit
+			app.io.to(player_two.socketId).emit('win');   // <<<<<<<<<<<<<<<< emit
+
+
+		} else {
 
 			var match = false;
 			var ask = "";
 			
 			// 카드 요청한 플레이어 확인해서 상태 변경
-			if(player_one.socketId == socket.id) {
+			if (player_one.socketId == socket.id) {
 				player_one.turn = false;
 				player_two.turn = true;
 
@@ -220,8 +231,7 @@ app.io.on('connection', (socket) => {
 
 				player_one.count--;
 
-				info_msg.mode = 'info';
-				info_msg.msg = "player1 남은 카드: " + player_one.count;
+				var info_msg = "player1 남은 카드: " + player_one.count;
 				app.io.emit('info', info_msg);    // <<<<<<<<<<<<<<<< emit
 
 			} else if (player_two.socketId == socket.id) {
@@ -232,15 +242,12 @@ app.io.on('connection', (socket) => {
 
 				player_two.count--;
 
-				info_msg.mode = 'info';
-				info_msg.msg = "player2 남은 카드: " + player_two.count;
+				var info_msg = "player2 남은 카드: " + player_two.count;
 				app.io.emit('info', info_msg);    // <<<<<<<<<<<<<<<< emit
 			}
 			
-			if (idx == 0) {// 첫 카드. 
-				//처음 종을 쳤을 경우, 상대방의 안깐 카드를 주는지(카드 뒤집는 횟수를 늘리는지) 
-				//바닥에 쌓는 카드를 늘리는지
-
+			if (idx == 0 || bell_flag) {// 첫 카드. 
+				bell_flag = false;
 				var card_one = shuffled_card_list[0];
 
 				match = Number(card_one.substring(1, 2)) == 5 ? true : false;
@@ -256,35 +263,32 @@ app.io.on('connection', (socket) => {
 				var card_one_num = Number(card_one.substring(1, 2));
 
 				var same_kind = card_one.substring(0, 1) == card_before.substring(0, 1) ? true : false;
-				
-				if(same_kind){
+				var five_card = card_one_num == 5 || (card_before_num == 5 && !same_kind) ? true : false;
+
+				// 합 5
+				if (same_kind) {
 					var make_five = card_before_num + card_one_num == 5 ? true : false;
 				}
+
+
+				match = (make_five || five_card) ? true : false;
+
 				
-
-
-				// 카드 숫자가 5일 때 종을 안치고 넘어가서 바닥엔 5가 계속 있는 상태일 때의 예외처리 필요
-
-
-				match = (make_five || card_one_num == 5 || card_before_num == 5) ? true : false;
+				// 바닥 카드 
+				used_card_list.push(card_one);
+				console.log("바닥 카드 ", used_card_list);
+				
 				app.io.to(two_room).emit('gift_card', card_one, idx, match, ask);    // <<<<<<<<<<<<<<<< emit
 				idx++;
 				
 				console.log(card_before, card_one, "  >>>  same_kind: ", same_kind, " / match: ", match);
 
-			} else {
-				console.log("카드 다 줬음. 엔딩은 1P 2P 카운트 비교해서");
-				
+			} 
 
-			}
+			var card_open_after_msg = [player_one, player_two];
 
-			info_msg.mode = "card_open_after";
-			info_msg.msg = [player_one, player_two];
+			app.io.to(two_room).emit('card_open_after', card_open_after_msg);    // <<<<<<<<<<<<<<<< emit
 
-			app.io.to(two_room).emit('card_open_after', info_msg);    // <<<<<<<<<<<<<<<< emit
-
-		}else {
-			console.log("엔딩처리 ㄱㄱㄱㄱㄱㄱ", player_one.count, player_two.count);
 		}
 	})
 
@@ -299,80 +303,79 @@ app.io.on('connection', (socket) => {
 	// 벨
 	.on("bell", (match) => {
 		console.log("★★★ bell: ", socket.id);
-		
+
+		bell_flag = true;
+
+		for (var i=0; i<used_card_list.length; i++) {
+			shuffled_card_list.push(used_card_list[i]);
+		}
+		console.log("바닥카드 덧붙인 shuffled_card_list", shuffled_card_list);
+
 		if (player_one.count > 0 && player_two.count > 0) {
 
-			if (player_one.socketId == socket.id){
+			if (player_one.socketId == socket.id) {
 
 				if (!match) {
+					player_one.count--;
+					player_two.count = player_two.count + used_card_list.length;
 					player_one.turn = false;
 					player_two.turn = true;
 				} else {
+					player_two.count--;
+					player_one.count = player_one.count + used_card_list.length;
 					player_two.turn = false;
 					player_one.turn = true;
 				}
 
-				info_msg.mode = 'info';
-				info_msg.msg = "player1 남은 카드: " + player_one.count;
-
-				app.io.emit('server_message', info_msg);    // <<<<<<<<<<<<<<<< emit
-
-				info_msg.mode = "card_open_after";
-				info_msg.msg = [player_one, player_two];
-
-				app.io.to(two_room).emit('card_open_after', info_msg);    // <<<<<<<<<<<<<<<< emit
-
-			} else if (player_two.socketId === socket.id) {
-
-				if (!match) {
-					player_two.turn = false;
-					player_one.turn = true;
-				} else {
-					player_one.turn = false;
-					player_two.turn = true;
-				}
-
-				info_msg.mode = 'info';
-				info_msg.msg = "player2 남은 카드: " + player_two.count;
-
+				var info_msg = "player1 남은 카드: " + player_one.count;
 				app.io.emit('info', info_msg);    // <<<<<<<<<<<<<<<< emit
 
-				info_msg.mode = "card_open_after";
-				info_msg.msg = [player_one, player_two];
+				var card_open_after_msg = [player_one, player_two];
+				app.io.to(two_room).emit('card_open_after', card_open_after_msg);    // <<<<<<<<<<<<<<<< emit
 
-				app.io.to(two_room).emit('card_open_after', info_msg);    // <<<<<<<<<<<<<<<< emit
+			} else if (player_two.socketId == socket.id) {
+
+				if (!match) {
+					player_two.count--;
+					player_one.count = player_one.count + used_card_list.length;
+					player_two.turn = false;
+					player_one.turn = true;
+				} else {
+					player_one.count--;
+					player_two.count = player_two.count + used_card_list.length;
+					player_one.turn = false;
+					player_two.turn = true;
+				}
+
+				var info_msg = "player2 남은 카드: " + player_two.count;
+				app.io.emit('info', info_msg);    // <<<<<<<<<<<<<<<< emit
+
+				var card_open_after_msg = [player_one, player_two];
+				app.io.to(two_room).emit('card_open_after', card_open_after_msg);    // <<<<<<<<<<<<<<<< emit
 
 			}
-			info_msg.mode = 'bell';
+
+			used_card_list = [];
 			// info_msg.msg = "벨 결과: (1p)" + player_one.count + " : (2p)" + player_two.count;
-			info_msg.msg = [player_one, player_two];
+			var bell_msg = [player_one, player_two];
 
-			app.io.to(two_room).emit('bell', info_msg);    // <<<<<<<<<<<<<<<< emit
+			app.io.to(two_room).emit('bell', bell_msg);    // <<<<<<<<<<<<<<<< emit
 
-		} else if (player_one.count == 0) {
+		} else if (player_one.count < 0) {
 			console.log("플레이어1 0 됐음");
 
-			app.io.to(player_one.socketId).emit('win');    // <<<<<<<<<<<<<<<< emit
-			app.io.to(player_two.socketId).emit('lose');   // <<<<<<<<<<<<<<<< emit
+			app.io.to(player_one.socketId).emit('lose');    // <<<<<<<<<<<<<<<< emit
+			app.io.to(player_two.socketId).emit('win');   // <<<<<<<<<<<<<<<< emit
 
 
-		} else if (player_two.count == 0) {
+		} else if (player_two.count < 0) {
 			console.log("플레이어2 0 됐음");
 
-			app.io.to(player_one.socketId).emit('lose');    // <<<<<<<<<<<<<<<< emit
-			app.io.to(player_two.socketId).emit('win');    // <<<<<<<<<<<<<<<< emit
+			app.io.to(player_one.socketId).emit('win');    // <<<<<<<<<<<<<<<< emit
+			app.io.to(player_two.socketId).emit('lose');    // <<<<<<<<<<<<<<<< emit
 
 		}
 	})
-
-
-
-	// .on() 엔딩. 
-	/* 승패 판별 방법.
-		1p 2p 각각 28 부여해서 차감하는 방식으로, (제출시 -1)
-		0에 먼저 도달하면 승리 
-		무승부도 생각해 봐야함.
-	*/
 
 	.on('reset', () => {
 		shuffled_card_list = shuffled_card_list = card_list.shuffle();
