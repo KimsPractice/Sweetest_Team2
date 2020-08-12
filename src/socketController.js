@@ -5,12 +5,18 @@ const room_info = {
   name: "",
   userList: [],
   full: false,
+  usedCards: [],
 };
 
 const socketController = (socket, io) => {
   let { name: roomName, userList } = room_info;
   let shuffledDeck = makeCardDeck();
-  let usedCards = [];
+
+  const sliceDeck = (userDeck) => {
+    const slicedCard = userDeck[0];
+    const slicedDeck = userDeck.slice(1, userDeck.length);
+    return { slicedCard, slicedDeck };
+  };
 
   const enterRoom = (roomName, newPlayer) => {
     userList.push(newPlayer);
@@ -19,6 +25,27 @@ const socketController = (socket, io) => {
     newPlayer.info();
   };
 
+  socket.on("bellClick", ({ userId, currentCards }) => {
+    // const card1 = currentCards[0].substring(0, 1);
+    //   const card2 = currentCards[1].substring(0, 1);
+    //   console.log(card1, card2);
+
+    if (currentCards.length < 2) {
+      userList.map((user) => {
+        let dropCard = "";
+        if (user.socketId == userId) {
+          const { slicedCard, slicedDeck } = sliceDeck(user.cards);
+          dropCard = slicedCard;
+          console.log("dropCard" + dropCard);
+          user.cards = slicedDeck;
+        } else {
+          user.cards = user.cards.push(dropCard);
+          console.log("otherCards" + user.cards);
+        }
+      });
+    }
+  });
+
   socket.on("cardOpen", (openUserId) => {
     let firstCard = "";
 
@@ -26,9 +53,9 @@ const socketController = (socket, io) => {
       if (users.socketId == openUserId) {
         if (users.cards.length != 0) {
           users.turn = false;
-          firstCard = users.cards[0];
-          usedCards.push(firstCard);
-          users.cards = users.cards.slice(1, users.cards.length);
+          const { slicedCard, slicedDeck } = sliceDeck(users.cards);
+          firstCard = slicedCard;
+          users.cards = slicedDeck;
         } else {
           io.emit("gameSet", { userList, loseuserId: users.socketId });
         }
@@ -36,6 +63,8 @@ const socketController = (socket, io) => {
         users.turn = true;
       }
     });
+    room_info.usedCards.push(firstCard);
+    console.log(room_info.usedCards, firstCard);
     io.emit("drawCard", { firstCard, userList });
   });
 
@@ -90,177 +119,6 @@ const socketController = (socket, io) => {
       io.to(userList[0].socketId).emit("readyComplete", room_info);
     }
   });
-
-  // // 카드 요청 > 전달 이벤트
-  // socket.on("cardOpen", () => {
-  //   const player1 = userList[0];
-  //   const player2 = userList[1];
-  //   console.log(player1, player2);
-  //   if (player1.life > 0 && player2.life > 0) {
-  //     const match = false;
-  //     const ask = "";
-
-  //     // 카드 요청한 플레이어 확인해서 상태 변경
-  //     if (player1.socketId == socket.id) {
-  //       player1.turn = false;
-  //       player2.turn = true;
-
-  //       ask = player1.socketId;
-
-  //       player1.life--;
-
-  //       info_msg.mode = "info";
-  //       info_msg.msg = "player1 남은 카드: " + player1.life;
-  //       io.emit("server_message", info_msg); // <<<<<<<<<<<<<<<< emit
-  //     } else if (player2.socketId == socket.id) {
-  //       player2.turn = false;
-  //       player1.turn = true;
-
-  //       ask = player2.socketId;
-
-  //       player2.life--;
-
-  //       info_msg.mode = "info";
-  //       info_msg.msg = "player2 남은 카드: " + player2.life;
-  //       io.emit("server_message", info_msg); // <<<<<<<<<<<<<<<< emit
-  //     }
-
-  //     if (idx == 0) {
-  //       // 첫 카드.
-  //       //처음 종을 쳤을 경우, 상대방의 안깐 카드를 주는지(카드 뒤집는 횟수를 늘리는지)
-  //       //바닥에 쌓는 카드를 늘리는지
-
-  //       const card_one = shuffled_card_list[0];
-
-  //       match = Number(card_one.substring(1, 2)) == 5 ? true : false;
-  //       app.io.to(two_room).emit("gift_card", card_one, idx, match, ask); // <<<<<<<<<<<<<<<< emit
-  //       idx++;
-  //     } else if (idx != 0 && idx < shuffled_card_list.length) {
-  //       // 바로 전 카드와 비교
-  //       const card_before = shuffled_card_list[idx - 1];
-  //       const card_one = shuffled_card_list[idx];
-  //       const card_before_num = Number(card_before.substring(1, 2));
-  //       const card_one_num = Number(card_one.substring(1, 2));
-
-  //       const same_kind =
-  //         card_one.substring(0, 1) == card_before.substring(0, 1)
-  //           ? true
-  //           : false;
-
-  //       if (same_kind) {
-  //         const make_five = card_before_num + card_one_num == 5 ? true : false;
-  //       }
-
-  //       // 카드 숫자가 5일 때 종을 안치고 넘어가서 바닥엔 5가 계속 있는 상태일 때의 예외처리 필요
-
-  //       match = make_five || card_one_num == 5 ? true : false;
-  //       app.io.to(two_room).emit("gift_card", card_one, idx, match, ask); // <<<<<<<<<<<<<<<< emit
-  //       idx++;
-
-  //       console.log(
-  //         card_before,
-  //         card_one,
-  //         "  >>>  same_kind: ",
-  //         same_kind,
-  //         " / match: ",
-  //         match
-  //       );
-  //     } else {
-  //       console.log("카드 다 줬음. 엔딩은 1P 2P 카운트 비교해서");
-  //     }
-
-  //     info_msg.mode = "card_open_after";
-  //     info_msg.msg = [player1, player2];
-
-  //     app.io.to(two_room).emit("server_message", info_msg); // <<<<<<<<<<<<<<<< emit
-  //   } else {
-  //     console.log("엔딩처리 ㄱㄱㄱㄱㄱㄱ", player1.life, player2.life);
-  //   }
-  // });
-
-  // socket.on("count", (count) => {
-  //   if (player_one == 0 || player2 == 0 || count == 0) {
-  //     console.log(
-  //       "게임 끝. (player_one)" + player_one + " 대 (player2)" + player2
-  //     );
-  //   }
-  // });
-
-  // 클라이언트로부터 전달받은 메시지를 종류별로 처리
-  // socket.on("client_message", (msg) => {
-  //   const player1 = userList[0];
-  //   const player2 = userList[1];
-
-  //   console.log("=== client_message: ", msg);
-
-  //   const { mode } = msg;
-
-  //   switch (mode) {
-  //     // 플레이어에게 닉네임 셋팅
-  //     case "user_init":
-  //       console.log("★★★ user_init: ", socket.id);
-
-  //       if (player1.socketId == socket.id) {
-  //         player1.name = msg.userName;
-  //       } else if (player2.socketId == socket.id) {
-  //         player2.name = msg.userName;
-  //       }
-
-  //       console.log("1p:", player1);
-  //       console.log("2p:", player2);
-
-  //       break;
-
-  //     // 벨 친 사람 정보로 카운트와 턴 처리
-  //     case "bell":
-  //       console.log("★★★ bell: ", socket.id);
-
-  //       if (player1.life > 0 && player2.life > 0) {
-  //         if (player1.socketId == socket.id) {
-  //           if (!msg.match) player1.life--;
-  //           player1.turn = false;
-  //           player2.turn = true;
-
-  //           info_msg.mode = "info";
-  //           info_msg.msg = "player1 남은 카드: " + player1.life;
-
-  //           app.io.emit("server_message", info_msg); // <<<<<<<<<<<<<<<< emit
-  //         } else if (player2.socketId === socket.id) {
-  //           if (!msg.match) player2.life--;
-  //           player2.turn = false;
-  //           player1.turn = true;
-
-  //           info_msg.mode = "info";
-  //           info_msg.msg = "player2 남은 카드: " + player2.life;
-
-  //           app.io.emit("server_message", info_msg); // <<<<<<<<<<<<<<<< emit
-  //         }
-  //         info_msg.mode = "bell";
-  //         // info_msg.msg = "벨 결과: (1p)" + player1.life + " : (2p)" + player2.life;
-  //         info_msg.msg = [player1, player2];
-
-  //         app.io.to(two_room).emit("server_message", info_msg); // <<<<<<<<<<<<<<<< emit
-  //       } else if (player1.life == 0) {
-  //         console.log("플레이어1 0 됐음");
-
-  //         app.io.to(player1.socketId).emit("lose");
-  //         app.io.to(player2.socketId).emit("win");
-  //       } else if (player2.life == 0) {
-  //         console.log("플레이어2 0 됐음");
-
-  //         app.io.to(player1.socketId).emit("win");
-  //         app.io.to(player2.socketId).emit("lose");
-  //       }
-
-  //       break;
-
-  //     case "msg":
-  //       break;
-
-  //     case "abc":
-  //       break;
-  //   }
-  // });
 
   // // .on() 엔딩.
   // /* 승패 판별 방법.

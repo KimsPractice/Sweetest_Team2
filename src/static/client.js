@@ -7,6 +7,7 @@ const bell = document.querySelector(".bell");
 const cardOpenBtn = document.querySelector(".cardOpenBtn");
 const myOpenCardImg = document.querySelector(".myOpenCardImg");
 const userOpenCardImg = document.querySelector(".userOpenCardImg");
+let currentCards = [];
 
 const imageName = (firstCard) => {
   let cardName = "";
@@ -52,6 +53,13 @@ const turnChange = (userList, imagePath = "", cardDumy = "") => {
 socket.on("drawCard", ({ firstCard, userList }) => {
   const imagePath = imageName(firstCard);
   turnChange(userList, imagePath);
+
+  if (currentCards.length < 2) {
+    currentCards.push(firstCard);
+  } else {
+    currentCards.shift();
+    currentCards.push(firstCard);
+  }
 });
 
 socket.on("gameSetup", (userList) => {
@@ -79,27 +87,6 @@ socket.on("userInit", (userList) => {
   });
 });
 
-// // 카드 배분. 받은걸로 액션 처리.
-// socket.on("gift_card", (card, idx, match, ask) => {
-//   var folder_name = makeName(card);
-//   var card_name = folder_name + card.substring(1, 2);
-
-//   is_match = match; // $('#big_bell').click 에서 사용
-
-//   console.log("(idx:" + idx + ")", card_name, " / match: ", match);
-
-//   // 카드를 요청한 소켓이 본인이면 본인자리에, 상대방이면 상대방 자리에 카드 배치
-//   ask == socket.id
-//     ? ($("#myOpenCardImg")[0].src =
-//         "/Image/" + folder_name + "/" + card_name + ".png")
-//     : ($("#userOpenCardImg")[0].src =
-//         "/Image/" + folder_name + "/" + card_name + ".png");
-
-//   if (idx == 55) {
-//     console.log("카드 다 썼음. 엔딩처리하면 됨");
-//   }
-// });
-
 // // 게임오버
 // socket.on("win", (msg) => {
 //   console.log("승리");
@@ -114,24 +101,10 @@ socket.on("userInit", (userList) => {
 //   socket.emit("cardOpen");
 // });
 
-// // 벨
-// $("#big_bell").click(() => {
-//   var msg = {
-//     mode: "bell",
-//     match: null,
-//   };
-
-//   if (is_match) {
-//     // 쓴 카드 회수하는 것은 승패에 영향이 없지만 추가해야할까...
-//     // 한 번이라도 종을 친 적이 있다면 0 됐을 때 카드 뒷면 이미지 보여지게 처리하면 됨. 없으면 맨마닥.
-
-//     msg.match = true;
-//     socket.emit("client_message", msg);
-//   } else {
-//     msg.match = false;
-//     socket.emit("client_message", msg);
-//   }
-// });
+// 벨
+$("#big_bell").click(() => {
+  socket.emit("bellClick", { userId: socket.id, currentCards });
+});
 
 // /////////////// 테스트용
 
