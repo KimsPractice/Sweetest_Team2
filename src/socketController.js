@@ -141,7 +141,7 @@ const socketController = (socket, io) => {
         );
         enterRoom(roomName, newPlayer2);
       } else {
-        console.log("게임방에 빈자리가 없습니다.");
+        socket.emit("full");
       }
     }
 

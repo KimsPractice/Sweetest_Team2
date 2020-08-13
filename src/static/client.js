@@ -53,7 +53,7 @@ const turnChange = (userList, imagePath = "") => {
   });
 };
 
-socket.on("gameSet", ({ userList, loseuserId }) => {
+socket.on("gameSet", ({ loseuserId }) => {
   console.log("게임 끝~~~~~");
   finText.style.display = "block";
   if (loseuserId == socket.id) {
