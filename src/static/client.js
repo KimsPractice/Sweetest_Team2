@@ -101,7 +101,6 @@ socket.on("readyComplete", (roomInfo) => {
   console.log(roomInfo);
   const { full } = roomInfo;
 
-  console.log("준비가 완료되었습니다!! 게임시작을 눌러주세요 !!");
   if (full == true) {
     startBtn.style.display = "block";
   }
@@ -121,7 +120,6 @@ $("#big_bell").click(() => {
 });
 
 $(".ready").click(() => {
-  // 레디 (방에 입장) 2P도 레디 해야 카드 오픈 누를 수 있게 해야함
   $(".ready")[0].disabled = true;
   socket.emit("ready", nickName.innerHTML);
 });

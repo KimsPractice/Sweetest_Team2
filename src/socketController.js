@@ -27,14 +27,19 @@ const socketController = (socket, io) => {
 
   socket.on("bellClick", ({ userId, currentCards }) => {
     let cleaning = false;
+    console.log(userId);
 
     const correctBell = () => {
+      console.log("딩동댕! 사용된 카드를 가져옵니다!");
+
       userList.map((user) => {
         if (user.socketId === socket.id) {
+          console.log("이전카드: " + user.cards);
+          console.log("추가될카드:" + usedCards);
           usedCards.map((card) => {
             user.cards.push(card);
           });
-          console.log(user.cards);
+          console.log("추가된카드: " + user.cards);
         }
       });
       usedCards = [];
@@ -42,29 +47,36 @@ const socketController = (socket, io) => {
     };
 
     const mistakeBell = () => {
+      console.log("땡! 상대방에게 카드를 한장주었습니다.");
+
       let dropCard = "";
       cleaning = false;
-      userList.map((user) => {
-        if (user.socketId == userId) {
-          console.log(user.cards);
-          const { slicedCard, slicedDeck } = sliceDeck(user.cards);
-          dropCard = slicedCard;
-          console.log("dropCard: " + dropCard);
-          user.cards = slicedDeck;
-        } else {
-          user.cards.push(dropCard);
-        }
-      });
+
+      // userList.map((user) => {
+      //   if (user.socketId === userId) {
+      //     const { slicedCard, slicedDeck } = sliceDeck(user.cards);
+      //     dropCard = slicedCard;
+      //     console.log("전달된 카드: " + dropCard);
+      //     user.cards = slicedDeck;
+      //     console.log(user.cards);
+      //   } else {
+      //     user.cards.push(dropCard);
+      //     console.log(user.cards);
+      //   }
+      // });
     };
 
     if (currentCards.length < 2) {
-      mistakeBell();
+      if (parseInt(currentCards[0].substring(1, 2)) != 5) {
+        mistakeBell();
+      } else {
+        correctBell();
+      }
     } else {
       const cardKind1 = currentCards[0].substring(0, 1);
-      const cardKind2 = currentCards[1].substring(0, 1);
       const cardNum1 = parseInt(currentCards[0].substring(1, 2));
+      const cardKind2 = currentCards[1].substring(0, 1);
       const cardNum2 = parseInt(currentCards[1].substring(1, 2));
-
       if (cardKind1 === cardKind2 && cardNum1 + cardNum2 >= 5) {
         correctBell();
       } else if (cardNum1 === 5 || cardNum2 === 5) {
@@ -87,7 +99,6 @@ const socketController = (socket, io) => {
           firstCard = slicedCard;
           user.cards = slicedDeck;
           usedCards.push(firstCard);
-          console.log(user.cards.length);
         } else {
           io.emit("gameSet", { userList, loseuserId: openUserId });
         }
@@ -151,45 +162,20 @@ const socketController = (socket, io) => {
     }
   });
 
-  // // .on() 엔딩.
-  // /* 승패 판별 방법.
-  // 	1p 2p 각각 28 부여해서 차감하는 방식으로, (제출시 -1, 종 잘못치면 -1)
-  // 	0에 먼저 도달하면 패배
-  // 	무승부도 생각해 봐야함.
-  // */
-
-  // socket.on("reset", () => {
-  //   shuffled_card_list = shuffled_card_list = card_list.shuffle();
-  //   idx = 0;
-  //   player_one.life = 28;
-  //   player2.life = 28;
-
-  //   console.log("=== 카드 셔플 ===");
-  //   console.log("=== SUFFLED CARD LIST", shuffled_card_list);
-
-  //   app.io.emit("clean"); // <<<<<<<<<<<<<<<< emit
-  // });
-
-  // socket.on("disconnect", () => {
-  //   // app.io.emit('clear', socket.id);  // <<<<<<<<<<<<<<<< emit
-
-  //   if (socket.id == room) {
-  //     console.log("방장이 방을 나갔음");
-  //     // 방이름 바꾸기
-
-  //     room = "";
-  //     io.emit("clean");
-  //   }
-
-  //   // 방정보에서 해당 소켓 삭제
-  //   const socket_index = room_info.userList.indexOf(socket.id);
-  //   room_info.userList.splice(socket_index, 1);
-
-  //   socket.leave(room);
-
-  //   console.log("연결해제: " + socket.id);
-  //   delete socket_list[socket.id];
-  // });
+  socket.on("disconnect", () => {
+    // if (socket.id == room) {
+    //   console.log("방장이 방을 나갔음");
+    //   // 방이름 바꾸기
+    //   room = "";
+    //   io.emit("clean");
+    // }
+    // // 방정보에서 해당 소켓 삭제
+    // const socket_index = room_info.userList.indexOf(socket.id);
+    // room_info.userList.splice(socket_index, 1);
+    // socket.leave(room);
+    // console.log("연결해제: " + socket.id);
+    // delete socket_list[socket.id];
+  });
 };
 
 export default socketController;
