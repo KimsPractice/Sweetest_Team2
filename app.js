@@ -105,7 +105,6 @@ var two_room = ""; // 2인용 방
 var idx = 0;
 var bell_flag = false;
 var used_card_list = [];
-var shuffled_card_list_delete;
 
 var room_info = {
   roomName: null,
@@ -195,18 +194,17 @@ app.io.on("connection", (socket) => {
 
     // 카드 요청 > 전달 이벤트
     .on("show_me_the_card", () => {
-      if (player_one.count < 0) {
-        // TODO:
+      // 카운트 체크 함수로
 
+      if (player_one.count < 0) {
         app.io.to(player_one.socketId).emit("win"); // <<<<<<<<<<<<<<<< emit
         app.io.to(player_two.socketId).emit("lose"); // <<<<<<<<<<<<<<<< emit
       } else if (player_two.count < 0) {
-        TODO: app.io.to(player_one.socketId).emit("lose"); // <<<<<<<<<<<<<<<< emit
+        app.io.to(player_one.socketId).emit("lose"); // <<<<<<<<<<<<<<<< emit
         app.io.to(player_two.socketId).emit("win"); // <<<<<<<<<<<<<<<< emit
       } else {
         var match = false;
         var ask = "";
-        var card_one = [];
 
         // 카드 요청한 플레이어 확인해서 상태 변경
         if (player_one.socketId == socket.id) {
@@ -234,7 +232,7 @@ app.io.on("connection", (socket) => {
         if (idx == 0 || bell_flag) {
           // 첫 카드.
           bell_flag = false;
-          card_one = shuffled_card_list[0];
+          var card_one = shuffled_card_list[0];
 
           match = Number(card_one.substring(1, 2)) == 5 ? true : false;
           app.io.to(two_room).emit("gift_card", card_one, idx, match, ask); // <<<<<<<<<<<<<<<< emit
@@ -242,7 +240,7 @@ app.io.on("connection", (socket) => {
         } else if (idx != 0 && idx < shuffled_card_list.length) {
           // 바로 전 카드와 비교
           var card_before = shuffled_card_list[idx - 1];
-          card_one = shuffled_card_list[idx];
+          var card_one = shuffled_card_list[idx];
           var card_before_num = Number(card_before.substring(1, 2));
           var card_one_num = Number(card_one.substring(1, 2));
 
@@ -263,9 +261,8 @@ app.io.on("connection", (socket) => {
           match = make_five || five_card ? true : false;
 
           // 바닥 카드
-
-          used_card_list.push(card_one);
-          console.log("바닥 카드 ", used_card_list);
+          // used_card_list.push(card_one);
+          // console.log("바닥 카드 ", used_card_list);
 
           app.io.to(two_room).emit("gift_card", card_one, idx, match, ask); // <<<<<<<<<<<<<<<< emit
           idx++;
@@ -301,37 +298,21 @@ app.io.on("connection", (socket) => {
 
       bell_flag = true;
 
-      for (var i = 0; i < used_card_list.length; i++) {
-        shuffled_card_list.push(used_card_list[i]);
-      }
-
-      console.log("바닥카드 덧붙인 shuffled_card_list", shuffled_card_list);
+      //   for (var i = 0; i < used_card_list.length; i++) {
+      //     shuffled_card_list.push(used_card_list[i]);
+      //   }
+      //   console.log("바닥카드 덧붙인 shuffled_card_list", shuffled_card_list);
 
       if (player_one.count > 0 && player_two.count > 0) {
         if (player_one.socketId == socket.id) {
           if (!match) {
-            player_one.count--;
-            player_two.count = player_two.count + used_card_list.length;
+            // player_one.count--;
+            // player_two.count = player_two.count;
             player_one.turn = false;
             player_two.turn = true;
           } else {
-            player_two.count--;
-            player_one.count = player_one.count + used_card_list.length;
-            shuffled_card_list_delete = shuffled_card_list.splice(
-              0,
-              used_card_list.length
-            ); // 냈던 카드 삭제
-
-            console.log(
-              " shuffled_card_list_delete ",
-              shuffled_card_list_delete
-            );
-
-            console.log(" shuffled_card_list ", shuffled_card_list);
-            console.log(" used_card_list ", used_card_list);
-
-            used_card_list = []; // 바닥 카드 초기화
-            idx = 0; //다시 shuffled_card_list 0번째부터 카드 꺼내기
+            // player_two.count--;
+            // player_one.count = player_one.count;
             player_two.turn = false;
             player_one.turn = true;
           }
@@ -343,19 +324,13 @@ app.io.on("connection", (socket) => {
           app.io.to(two_room).emit("card_open_after", card_open_after_msg); // <<<<<<<<<<<<<<<< emit
         } else if (player_two.socketId == socket.id) {
           if (!match) {
-            player_two.count--;
-            player_one.count = player_one.count + used_card_list.length;
+            // player_two.count--;
+            // player_one.count = player_one.count;
             player_two.turn = false;
             player_one.turn = true;
           } else {
-            player_one.count--;
-            player_two.count = player_two.count + used_card_list.length;
-            shuffled_card_list_delete = shuffled_card_list.splice(
-              0,
-              used_card_list.length
-            ); // 냈던 카드 삭제
-            used_card_list = []; // 바닥 카드 초기화
-            idx = 0; //다시 shuffled_card_list 0번째부터 카드 꺼내기
+            // player_one.count--;
+            // player_two.count = player_two.count;
             player_one.turn = false;
             player_two.turn = true;
           }
@@ -367,6 +342,7 @@ app.io.on("connection", (socket) => {
           app.io.to(two_room).emit("card_open_after", card_open_after_msg); // <<<<<<<<<<<<<<<< emit
         }
 
+        // used_card_list = [];
         // info_msg.msg = "벨 결과: (1p)" + player_one.count + " : (2p)" + player_two.count;
         var bell_msg = [player_one, player_two];
 
@@ -374,18 +350,18 @@ app.io.on("connection", (socket) => {
       } else if (player_one.count < 0) {
         console.log("플레이어1 0 됐음");
 
-        app.io.to(player_one.socketId).emit("lose"); // <<<<<<<<<<<<<<<< emit
-        app.io.to(player_two.socketId).emit("win"); // <<<<<<<<<<<<<<<< emit
+        app.io.to(player_one.socketId).emit("win"); // <<<<<<<<<<<<<<<< emit
+        app.io.to(player_two.socketId).emit("lose"); // <<<<<<<<<<<<<<<< emit
       } else if (player_two.count < 0) {
         console.log("플레이어2 0 됐음");
 
-        app.io.to(player_one.socketId).emit("win"); // <<<<<<<<<<<<<<<< emit
-        app.io.to(player_two.socketId).emit("lose"); // <<<<<<<<<<<<<<<< emit
+        app.io.to(player_one.socketId).emit("lose"); // <<<<<<<<<<<<<<<< emit
+        app.io.to(player_two.socketId).emit("win"); // <<<<<<<<<<<<<<<< emit
       }
     })
 
     .on("reset", () => {
-      shuffled_card_list = shuffled_card_list = card_list.shuffle();
+      shuffled_card_list = card_list.shuffle();
       idx = 0;
       player_one.count = 28;
       player_two.count = 28;

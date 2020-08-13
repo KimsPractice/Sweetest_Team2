@@ -6,7 +6,7 @@ block content
 				Img(id='userCardImg')
 			div#userOpenCard
 				Img(id='userOpenCardImg' src="")
-				//Img(id="userCloseCardImg")
+				
 				 
 			div#bell
 				button(id="big_bell")  
@@ -39,13 +39,25 @@ block content
 		var socket = io();
 		var is_match;
 		var nickName = document.getElementById('nickname')		// 내이름
-		var cardCnt =0;
+		var cardCnt = 0;
+		var usercardCnt = 0;
 		var userCard = document.getElementById('userCard');
 		var myCard =  document.getElementById('myCard');
 		var createCardImg = document.createElement('createCardImg');
 		var createCardImg2 = document.createElement('createCardImg2');
 		var myOpenCard = document.getElementById('myOpenCard');
 		
+		
+
+
+
+
+
+ 
+
+
+
+
 
 		// 카드 이름 매칭
 		function makeName(card) {
@@ -140,15 +152,21 @@ block content
 				}
 				
 			}else{
-				 $("#userOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
-				$("#userCardImg1").remove()
+
+				usercardCnt++;
+				 $("#userOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"			
+				 $("#userCardImg1").remove()
+
+				 	
+				if(usercardCnt>=2){
+					var userCloseCardImg = document.createElement('img')
+					userOpenCard.appendChild(userCloseCardImg)
+					userCloseCardImg.id = 'userCloseCardImg'
+				}
+
 			}
 
-			// 카드를 요청한 소켓이 본인이면 본인자리에, 상대방이면 상대방 자리에 카드 배치
-		/*	(ask == socket.id) ? $("#myOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
-			 $("#myCardImg2").remove()
-			 : $("#userOpenCardImg")[0].src = "/Image/" + folder_name + "/" + card_name + ".png"
-			 $("#userCardImg1").remove() */
+			
 
 		})
 
