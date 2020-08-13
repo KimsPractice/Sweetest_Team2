@@ -11,7 +11,6 @@ app.set("views", `${__dirname}/views`);
 
 app.use(logger("dev"));
 app.use(express.static(`${__dirname}/static`));
-// app.use();
 
 app.get("/", (req, res) => res.render("index"));
 app.get("/halli", (req, res) => {

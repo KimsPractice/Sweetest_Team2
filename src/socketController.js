@@ -9,7 +9,7 @@ const room_info = {
 };
 
 const socketController = (socket, io) => {
-  let { name: roomName, userList } = room_info;
+  let { name: roomName, userList, usedCards } = room_info;
   let shuffledDeck = makeCardDeck();
 
   const sliceDeck = (userDeck) => {
@@ -26,45 +26,76 @@ const socketController = (socket, io) => {
   };
 
   socket.on("bellClick", ({ userId, currentCards }) => {
-    // const card1 = currentCards[0].substring(0, 1);
-    //   const card2 = currentCards[1].substring(0, 1);
-    //   console.log(card1, card2);
+    let cleaning = false;
 
-    if (currentCards.length < 2) {
+    const correctBell = () => {
       userList.map((user) => {
-        let dropCard = "";
-        if (user.socketId == userId) {
-          const { slicedCard, slicedDeck } = sliceDeck(user.cards);
-          dropCard = slicedCard;
-          console.log("dropCard" + dropCard);
-          user.cards = slicedDeck;
-        } else {
-          user.cards = user.cards.push(dropCard);
-          console.log("otherCards" + user.cards);
+        if (user.socketId === socket.id) {
+          usedCards.map((card) => {
+            user.cards.push(card);
+          });
+          console.log(user.cards);
         }
       });
+      usedCards = [];
+      cleaning = true;
+    };
+
+    const mistakeBell = () => {
+      let dropCard = "";
+      cleaning = false;
+      userList.map((user) => {
+        if (user.socketId == userId) {
+          console.log(user.cards);
+          const { slicedCard, slicedDeck } = sliceDeck(user.cards);
+          dropCard = slicedCard;
+          console.log("dropCard: " + dropCard);
+          user.cards = slicedDeck;
+        } else {
+          user.cards.push(dropCard);
+        }
+      });
+    };
+
+    if (currentCards.length < 2) {
+      mistakeBell();
+    } else {
+      const cardKind1 = currentCards[0].substring(0, 1);
+      const cardKind2 = currentCards[1].substring(0, 1);
+      const cardNum1 = parseInt(currentCards[0].substring(1, 2));
+      const cardNum2 = parseInt(currentCards[1].substring(1, 2));
+
+      if (cardKind1 === cardKind2 && cardNum1 + cardNum2 >= 5) {
+        correctBell();
+      } else if (cardNum1 === 5 || cardNum2 === 5) {
+        correctBell();
+      } else {
+        mistakeBell();
+      }
     }
+    io.emit("bellDone", cleaning);
   });
 
   socket.on("cardOpen", (openUserId) => {
     let firstCard = "";
 
-    userList.map((users) => {
-      if (users.socketId == openUserId) {
-        if (users.cards.length != 0) {
-          users.turn = false;
-          const { slicedCard, slicedDeck } = sliceDeck(users.cards);
+    userList.map((user) => {
+      if (user.socketId === openUserId) {
+        if (user.cards.length != 0) {
+          user.turn = false;
+          const { slicedCard, slicedDeck } = sliceDeck(user.cards);
           firstCard = slicedCard;
-          users.cards = slicedDeck;
+          user.cards = slicedDeck;
+          usedCards.push(firstCard);
+          console.log(user.cards.length);
         } else {
-          io.emit("gameSet", { userList, loseuserId: users.socketId });
+          io.emit("gameSet", { userList, loseuserId: openUserId });
         }
       } else {
-        users.turn = true;
+        user.turn = true;
       }
     });
-    room_info.usedCards.push(firstCard);
-    console.log(room_info.usedCards, firstCard);
+
     io.emit("drawCard", { firstCard, userList });
   });
 

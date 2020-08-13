@@ -7,6 +7,9 @@ const bell = document.querySelector(".bell");
 const cardOpenBtn = document.querySelector(".cardOpenBtn");
 const myOpenCardImg = document.querySelector(".myOpenCardImg");
 const userOpenCardImg = document.querySelector(".userOpenCardImg");
+const bellText = document.querySelector(".bellText");
+const finText = document.querySelector(".finText");
+
 let currentCards = [];
 
 const imageName = (firstCard) => {
@@ -36,7 +39,7 @@ const imageName = (firstCard) => {
   return `css/${forderName}/${cardName}.png`;
 };
 
-const turnChange = (userList, imagePath = "", cardDumy = "") => {
+const turnChange = (userList, imagePath = "") => {
   userList.map((users) => {
     if (users.turn) {
       if (users.socketId == socket.id) {
@@ -50,9 +53,34 @@ const turnChange = (userList, imagePath = "", cardDumy = "") => {
   });
 };
 
+socket.on("gameSet", ({ userList, loseuserId }) => {
+  console.log("게임 끝~~~~~");
+  finText.style.display = "block";
+  if (loseuserId == socket.id) {
+    finText.innerHTML = "패배";
+  } else {
+    finText.innerHTML = "승리";
+  }
+});
+
+socket.on("bellDone", (cleaning) => {
+  bellText.style.display = "block";
+  setTimeout(() => {
+    bellText.style.display = "none";
+  }, 1000);
+
+  if (cleaning) {
+    currentCards = [];
+    userOpenCardImg.src = "";
+    myOpenCardImg.src = "";
+  }
+});
+
 socket.on("drawCard", ({ firstCard, userList }) => {
-  const imagePath = imageName(firstCard);
-  turnChange(userList, imagePath);
+  if (firstCard) {
+    const imagePath = imageName(firstCard);
+    turnChange(userList, imagePath);
+  }
 
   if (currentCards.length < 2) {
     currentCards.push(firstCard);
@@ -87,43 +115,16 @@ socket.on("userInit", (userList) => {
   });
 });
 
-// // 게임오버
-// socket.on("win", (msg) => {
-//   console.log("승리");
-// });
-
-// socket.on("lose", (msg) => {
-//   console.log("패배");
-// });
-
-// // 카드 요청
-// $("#cardOpenBtn").click(() => {
-//   socket.emit("cardOpen");
-// });
-
 // 벨
 $("#big_bell").click(() => {
-  socket.emit("bellClick", { userId: socket.id, currentCards });
+  socket.emit("bellClick", { userId: socket.id, currentCards, currentCards });
 });
-
-// /////////////// 테스트용
-
-// socket.on("clean", () => {
-//   $("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
-//   $("#userOpenCardImg")[0].src = "";
-//   $("#tmp1")[0].disabled = false;
-// });
 
 $(".ready").click(() => {
   // 레디 (방에 입장) 2P도 레디 해야 카드 오픈 누를 수 있게 해야함
   $(".ready")[0].disabled = true;
   socket.emit("ready", nickName.innerHTML);
 });
-
-// $("#tmp2").click(() => {
-//   console.log("게임을 초기화합니다.");
-//   socket.emit("reset");
-// });
 
 const handlecardOpenBtn = () => {
   socket.emit("cardOpen", socket.id);
