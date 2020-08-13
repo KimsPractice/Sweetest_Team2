@@ -4,7 +4,7 @@
   "description": "Sweetest 팀프로젝트 할리갈리 with express. socket.io",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon --exec babel-node bin/www"
+    "start": "node bin/www"
   },
   "repository": {
     "type": "git",
