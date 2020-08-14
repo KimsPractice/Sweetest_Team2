@@ -23,7 +23,7 @@ block content
 				
 		span#nickname
 
-		span#otherName(style="position:absolute;top:100px;")
+		span#otherName(style="position:absolute;top:100px;left:50px;")
 
 		div#tmpDiv(style="position:absolute;top:500px;")
 			button(id="tmp1") 레디
@@ -31,7 +31,7 @@ block content
 			br
 			button(id="tmp2") 카드 초기화
 		
-		div#tmpReadyMessage(style="display:none;position:absolute;top:300px;left:180px;") 상대방을 기다리는 중...
+		div#tmpReadyMessage(style="display:none;position:absolute;top:300px;left:140px;") 상대방을 기다리는 중...
 			
 	script(src='https://cdn.socket.io/socket.io-1.4.5.js')
 	script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js')
@@ -202,17 +202,12 @@ block content
 
 
 		// 게임오버
-		.on('win', msg => {
-			console.log("승리");
+		.on('the_end', msg => {
+			console.log("the_end: ", msg);
 
 		})
 
-		.on('lose', msg => {
-			console.log("패배");
 
-		})
-
-		
 		.on('clean', () => {
 			$("#myOpenCardImg")[0].src = ""; // 제출 이미지 비워줌
 			$("#userOpenCardImg")[0].src = "";
