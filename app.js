@@ -130,6 +130,13 @@ function countChecker(player1, player2) {
 	return winner;
 }
 
+function resetGame() {
+	shuffled_card_list = card_list.shuffle();
+	idx = 0;
+	// player_one.count = 28;
+	// player_two.count = 28;
+}
+
 
 // 소켓 통신 =====================================================================
 
@@ -259,10 +266,7 @@ app.io.on("connection", (socket) => {
 	})
 
 	.on("reset", () => {
-		shuffled_card_list = card_list.shuffle();
-		idx = 0;
-		player_one.count = 28;
-		player_two.count = 28;
+		resetGame();
 
 		console.log("=== 카드 셔플 ===");
 		console.log("=== SUFFLED CARD LIST", shuffled_card_list);
@@ -274,15 +278,14 @@ app.io.on("connection", (socket) => {
 		idx = 0;
 		if (socket.id == two_room) {
 			console.log("방장이 방을 나갔음");
-
-			two_room = "";
 			app.io.emit("clean");
 		}
 
 		var end_msg = socket.id;
 		app.io.to(two_room).emit("the_end", end_msg);
+		resetGame();
 
-		// 방정보에서 해당 소켓 삭제
+		// 방정보에서 해당 소켓 삭제 TODO: 방에 혼자 남았을 때 다른 사람 들어오는거 
 		var socket_index = room_info.socketList.indexOf(socket.id);
 		room_info.socketList.splice(socket_index, 1);
 

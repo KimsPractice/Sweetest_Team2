@@ -210,12 +210,17 @@ block content
 			$("#myOpenCardImg").css("display", "none");
 			$("#userOpenCardImg").css("display", "none");
 
+			$("#cardOpenBtn")[0].disabled = true;
+
 			if (msg.socketId == socket.id || msg.socketId === undefined) {
-				$("#tmpEndMessage").text('승리!');
+				if ($("#tmpEndMessage").text() == "" ) {
+					$("#tmpEndMessage").text('승리!');
+				}
 				$("#tmpEnd").css("display", "block");
 				
 				if (msg.socketId === undefined) {
 					$("#otherName").css("display", "none");
+					location.reload();
 				}
 			} else {
 				$("#tmpEndMessage").text('패배!');
