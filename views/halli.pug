@@ -32,6 +32,8 @@ block content
 			button(id="tmp2") 카드 초기화
 		
 		div#tmpReadyMessage(style="display:none;position:absolute;top:300px;left:140px;") 상대방을 기다리는 중...
+		div#tmpEnd(style="display:none;position:absolute;top:300px;font-size:20px;font-weight:600;width:420px;height:100px;text-align:center;") 
+			span#tmpEndMessage(style="margin:0;left:0;")
 			
 	script(src='https://cdn.socket.io/socket.io-1.4.5.js')
 	script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js')
@@ -205,6 +207,20 @@ block content
 		.on('the_end', msg => {
 			console.log("the_end: ", msg);
 
+			$("#myOpenCardImg").css("display", "none");
+			$("#userOpenCardImg").css("display", "none");
+
+			if (msg.socketId == socket.id || msg.socketId === undefined) {
+				$("#tmpEndMessage").text('승리!');
+				$("#tmpEnd").css("display", "block");
+				
+				if (msg.socketId === undefined) {
+					$("#otherName").css("display", "none");
+				}
+			} else {
+				$("#tmpEndMessage").text('패배!');
+				$("#tmpEnd").css("display", "block");
+			}
 		})
 
 

@@ -202,7 +202,6 @@ app.io.on("connection", (socket) => {
 		var info_msg = "남은 카드: " + player_one.count + " vs " + player_two.count;
 		app.io.emit("info", info_msg); // <<<<<<<<<<<<<<<< emit
 
-		// TODO: 이 아래 함수화
 		// 홀로 나와 있는 카드 (이전 카드와 비교하지 않음)
 		if (idx == 0 && bell_flag) {
 			bell_flag = false;
@@ -273,14 +272,15 @@ app.io.on("connection", (socket) => {
 
 	.on("disconnect", () => {
 		idx = 0;
-		// TODO: 누군가 나가면 자동 승리하게
 		if (socket.id == two_room) {
 			console.log("방장이 방을 나갔음");
-			// TODO: 방이름 바꾸기
 
 			two_room = "";
 			app.io.emit("clean");
 		}
+
+		var end_msg = socket.id;
+		app.io.to(two_room).emit("the_end", end_msg);
 
 		// 방정보에서 해당 소켓 삭제
 		var socket_index = room_info.socketList.indexOf(socket.id);
