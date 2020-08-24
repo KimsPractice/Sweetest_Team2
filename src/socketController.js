@@ -49,21 +49,28 @@ const socketController = (socket, io) => {
     const mistakeBell = () => {
       console.log("땡! 상대방에게 카드를 한장주었습니다.");
 
+      const player1 = userList[0];
+      const player2 = userList[1];
+
       let dropCard = "";
       cleaning = false;
 
-      // userList.map((user) => {
-      //   if (user.socketId === userId) {
-      //     const { slicedCard, slicedDeck } = sliceDeck(user.cards);
-      //     dropCard = slicedCard;
-      //     console.log("전달된 카드: " + dropCard);
-      //     user.cards = slicedDeck;
-      //     console.log(user.cards);
-      //   } else {
-      //     user.cards.push(dropCard);
-      //     console.log(user.cards);
-      //   }
-      // });
+      if (player1.socketId === userId) {
+        const { slicedCard, slicedDeck } = sliceDeck(player1.cards);
+        dropCard = slicedCard;
+        console.log("전달된 카드: " + dropCard);
+        player1.cards = slicedDeck;
+        player2.cards.push(dropCard);
+      } else if (player2.socketId === userId) {
+        const { slicedCard, slicedDeck } = sliceDeck(player2.cards);
+        dropCard = slicedCard;
+        console.log("전달된 카드: " + dropCard);
+        player2.cards = slicedDeck;
+        player1.cards.push(dropCard);
+      }
+
+      console.log(player1.cards);
+      console.log(player2.cards);
     };
 
     if (currentCards.length < 2) {
